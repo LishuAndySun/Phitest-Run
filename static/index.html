@@ -31,8 +31,21 @@ canvas{width:100%;height:220px;background:#121b29;border-radius:10px}
 </style>
 </head>
 <body>
-<header><h1>PhiTest Training</h1><p>训练计划 · 手动成绩录入 · 单曲与整组分析</p></header>
+<header><h1>PhiTest Training</h1><p>训练计划 · 手动成绩录入 · 单曲与整组分析 <span id="accountBar" style="display:none"><span id="accountName"></span> · <button class="secondary" style="width:auto;padding:4px 9px" onclick="logout()">退出</button></span></p></header>
+<main id="authPanel" style="display:none">
+ <section class="card">
+  <h2>账户</h2>
+  <div class="row"><select id="authMode" onchange="updateAuthMode()"><option value="login">登录</option><option value="register">注册</option><option value="reset">忘记密码</option><option value="setup">找回验证器配置</option></select><span class="muted" id="authHint">请输入账户信息</span></div>
+  <input id="authUsername" autocomplete="username" placeholder="用户名">
+  <input id="authPassword" type="password" autocomplete="current-password" placeholder="密码（至少 8 位）">
+  <input id="authCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Authenticator 验证码（6 位）">
+  <button id="authSubmit" onclick="submitAuth()">登录</button>
+  <div id="authMessage" class="muted" role="status"></div>
+  <div id="totpSetup" class="muted" style="display:none;overflow-wrap:anywhere"></div>
+ </section>
+</main>
 <main>
+<div id="appContent">
 <section class="grid">
  <div class="card"><div class="muted">训练场次</div><div class="metric" id="sessions">—</div></div>
  <div class="card"><div class="muted">成绩记录</div><div class="metric" id="plays">—</div></div>
@@ -79,14 +92,61 @@ canvas{width:100%;height:220px;background:#121b29;border-radius:10px}
 <div class="chart-wrap"><canvas id="songTrend" width="1000" height="260"></canvas><div class="chart-tip"></div></div>
 <div class="chart-actions"><button class="secondary" onclick="resetChart('songTrend')" title="重置缩放和平移">重置视图</button></div>
 </section>
+</div>
 </main>
 <script>
 const $ = id => document.getElementById(id);
 const chartState=new Map();
 let trendSessions=[];
+const CHART_CUTOFF = new Date('2026-11-05T00:00:00');
+function isChartPointVisible(timestamp){
+ const date=new Date(timestamp);
+ return !Number.isNaN(date.getTime()) && date>=CHART_CUTOFF;
+}
+let currentUser=null;
+function updateAuthMode(){
+ const mode=$('authMode').value;
+ $('authSubmit').textContent=mode==='login'?'登录':mode==='register'?'创建账户并绑定验证器':mode==='setup'?'显示二维码和密钥':'重置密码';
+ $('authPassword').placeholder=mode==='reset'?'新密码（至少 8 位）':'密码（至少 8 位）';
+ $('authPassword').autocomplete=mode==='reset'?'new-password':'current-password';
+ $('authHint').textContent=mode==='register'?'首次注册会创建 Authenticator 密钥':mode==='reset'?'需输入已绑定验证器当前代码':mode==='setup'?'输入该账户密码以重新显示配置':'请输入账户信息';
+ $('authCode').required=mode==='login'||mode==='reset';
+ $('authCode').disabled=mode==='register'||mode==='setup';
+ $('authCode').placeholder=mode==='register'?'注册后再添加 Authenticator':mode==='setup'?'无需验证码':'Authenticator 验证码（6 位）';
+ $('authMessage').textContent='';
+}
+async function submitAuth(){
+ const mode=$('authMode').value,username=$('authUsername').value,password=$('authPassword').value,code=$('authCode').value;
+ const endpoint=mode==='reset'?'/api/auth/reset-password':mode==='setup'?'/api/auth/authenticator-setup':`/api/auth/${mode}`;
+ const body=mode==='reset'?{username,new_password:password,code}:mode==='register'||mode==='setup'?{username,password}:{username,password,code};
+ try{
+  const result=await api(endpoint,{method:'POST',body:JSON.stringify(body)});
+  if(mode==='register'||mode==='setup'){
+   showTotpSetup(result,mode==='register');
+  }else if(mode==='reset'){
+   $('authMessage').textContent=result.message;$('authMode').value='login';updateAuthMode();$('authPassword').value='';$('authCode').value='';
+  }else{await showApp(result.username)}
+ }catch(e){$('authMessage').textContent=e.message}
+}
+function showTotpSetup(result,isNewAccount){
+ const box=$('totpSetup');box.replaceChildren();
+ const intro=document.createElement('p');intro.textContent=isNewAccount?'用 1Password 等 Authenticator 扫描二维码，或手动添加密钥。':'这是此账户现有的 Authenticator 配置。';
+ const image=document.createElement('img');image.src=result.qr_code;image.alt='Authenticator 设置二维码';image.width=220;image.height=220;image.style.cssText='display:block;background:white;padding:8px;border-radius:6px';
+ const secret=document.createElement('p');secret.textContent=`密钥：${result.totp_secret}`;
+ const copy=document.createElement('button');copy.type='button';copy.textContent='复制密钥';copy.onclick=()=>navigator.clipboard.writeText(result.totp_secret).then(()=>{$('authMessage').textContent='密钥已复制'}).catch(()=>{$('authMessage').textContent='请手动复制上方密钥'});
+ const link=document.createElement('a');link.href=result.otpauth_url;link.textContent='打开 Authenticator 配置链接';
+ box.append(intro,image,secret,copy,link);box.style.display='block';
+ if(isNewAccount){$('authMode').value='login';updateAuthMode();$('authUsername').value=result.username;$('authPassword').value='';$('authMessage').textContent='验证器配置已显示；添加后即可登录。'}
+}
+async function showApp(username){
+ currentUser=username;$('authPanel').style.display='none';$('appContent').style.display='block';
+ $('accountBar').style.display='inline';$('accountName').textContent=`账户：${username}`;
+ await loadCharts();await loadAll();await loadAccessUrls();
+}
+async function logout(){await api('/api/auth/logout',{method:'POST'});location.reload()}
 async function api(path, options={}) {
-  const r = await fetch(path, {headers:{'Content-Type':'application/json'}, ...options});
-  if (!r.ok) { let msg='请求失败'; try{msg=(await r.json()).detail||msg}catch(e){}; throw new Error(msg); }
+  const r = await fetch(path, {credentials:'same-origin',headers:{'Content-Type':'application/json'}, ...options});
+  if (!r.ok) { let msg='请求失败'; try{const payload=await r.json();const detail=payload.detail;if(typeof detail==='string')msg=detail;else if(Array.isArray(detail))msg=detail.map(item=>item.msg||JSON.stringify(item)).join('；');else if(detail)msg=JSON.stringify(detail)}catch(e){}; throw new Error(msg); }
   return r.json();
 }
 function fmt(n){return Number(n||0).toLocaleString('en-US')}
@@ -204,24 +264,28 @@ async function openSession(id){
   const isTest=data.session.kind==='test';
   const editor=document.createElement('div');
   editor.className='session-editor';
-  editor.innerHTML=`<p class="muted">${isTest?'填写准确率（0～100）':'填写成绩（0～1,000,000）'}；每首单独保存，已保存的数据会自动显示。</p>`;
+  editor.innerHTML=`<p class="muted">${isTest?'填写 N、Perfect、Good、Bad、Miss 和整局 MaxCombo，系统按标准公式计算 ACC 与 Score。':'填写成绩（0～1,000,000）'}；每首单独保存，已保存的数据会自动显示。</p>`;
   data.charts.forEach(c=>{
    const row=document.createElement('div');
    row.className='listitem row';
    const label=document.createElement('label');
    label.textContent=`${c.sequence}. ${c.song_name} · ${c.difficulty}`;
    const field=document.createElement('input');
-   field.type='number';field.min='0';field.max=isTest?'100':'1000000';
-   field.step=isTest?'any':'1';field.placeholder=isTest?'准确率':'成绩';
-   field.value=isTest?(c.accuracy??''):(c.score??'');
-   field.id=`record-${c.session_chart_id}`;
+  field.type='number';field.min='0';field.max=isTest?'1000000':'1000000';
+  field.step='1';field.placeholder=isTest?'判定数据':'成绩';
+  field.value=isTest?'':(c.score??'');
+  field.id=`record-${c.session_chart_id}`;
    const status=document.createElement('span');
    status.className='muted';status.textContent=field.value===''?'未保存':'已保存';
-   const save=document.createElement('button');
+  const save=document.createElement('button');
    save.textContent='保存';save.type='button';
-   save.addEventListener('click',()=>saveSessionRecord(id,c.session_chart_id,isTest,status));
-   const details=document.createElement('div');
-   details.append(label,field,save,status);
+  save.addEventListener('click',()=>saveSessionRecord(id,c.session_chart_id,isTest,status));
+  const details=document.createElement('div');
+  if(isTest){
+   const inputs=['total_notes','perfect','good','bad','miss','max_combo'];
+   const fields=inputs.map(name=>{const input=document.createElement('input');input.type='number';input.min='0';input.step='1';input.placeholder=name;input.id=`record-${c.session_chart_id}-${name}`;return input});
+   details.append(label,...fields,save,status);
+  }else details.append(label,field,save,status);
    row.appendChild(details);
    editor.appendChild(row);
   });
@@ -240,14 +304,19 @@ async function openSession(id){
  }catch(e){alert(e.message)}
 }
 async function saveSessionRecord(sessionId,recordId,isTest,status){
+ if(isTest){
+  const names=['total_notes','perfect','good','bad','miss','max_combo'];
+  const values=Object.fromEntries(names.map(name=>[name,Number($(`record-${recordId}-${name}`).value)]));
+  if(names.some(name=>!Number.isInteger(values[name])||values[name]<0)){alert('所有判定数量必须是非负整数');return}
+  try{const result=await api(`/api/tests/${sessionId}/records/${recordId}`,{method:'PUT',body:JSON.stringify(values)});status.textContent=`已保存 · ACC ${result.accuracy.toFixed(4)}% · Score ${Math.round(result.score).toLocaleString()}`;await loadAll();}catch(e){alert(e.message)}
+  return;
+ }
  const field=$(`record-${recordId}`),value=Number(field.value);
  if(!Number.isFinite(value)||value<0||value>(isTest?100:1000000)||(!isTest&&!Number.isInteger(value))){
   alert(isTest?'准确率必须是 0～100 的数字':'成绩必须是 0～1,000,000 的整数');return;
  }
  try{
-  await api(`${isTest?'/api/tests':'/api/sessions'}/${sessionId}/records/${recordId}`,{
-   method:'PUT',body:JSON.stringify(isTest?{accuracy:value}:{score:value})
-  });
+  await api(`/api/sessions/${sessionId}/records/${recordId}`,{method:'PUT',body:JSON.stringify({score:value})});
   status.textContent='已保存';
  }catch(e){alert(e.message)}
 }
@@ -264,7 +333,8 @@ async function finishSession(id){
 async function loadChartHistory(){
  const id=$('chartForHistory').value;if(!id){draw('songTrend',[]);return}
  const rows=await api('/api/analytics/chart/'+id);
- draw('songTrend',rows.map((r,i)=>({x:i+1,y:r.accuracy==null?Number(r.score):Number(r.accuracy)*10000,time:r.played_at||r.created_at})), '#65d6ad');
+ const visibleRows=rows.filter(r=>isChartPointVisible(r.played_at||r.created_at));
+ draw('songTrend',visibleRows.map((r,i)=>({x:i+1,y:Number(r.score),time:r.played_at||r.created_at})), '#65d6ad');
 }
 async function loadAll(){
  const [s,rows]=await Promise.all([api('/api/analytics/summary'),api('/api/sessions')]);
@@ -285,7 +355,7 @@ async function loadAll(){
  s.history.forEach(r=>{
   if(!sessions.has(r.session_id))sessions.set(r.session_id,{id:r.session_id,name:`#${r.session_id} [${r.kind==='test'?'Test':'Train'}] ${r.name}`,points:[]});
   const group=sessions.get(r.session_id);
-  group.points.push({x:Number(r.sequence),y:r.kind==='test'?Number(r.accuracy)*10000:Number(r.score),label:`第 ${r.sequence} 首`,time:r.played_at});
+  group.points.push({x:Number(r.sequence),y:Number(r.score),label:`第 ${r.sequence} 首`,time:r.played_at});
  });
  trendSessions=[...sessions.values()];
  const picker=$('trendSessions');picker.innerHTML='';
@@ -296,6 +366,9 @@ async function loadAll(){
  });
  renderTrend();
 }
-(async()=>{try{await loadCharts();await loadAll();await loadAccessUrls()}catch(e){alert(e.message)}})();
+(async()=>{
+ $('appContent').style.display='none';$('authPanel').style.display='block';
+ try{const result=await api('/api/auth/me');await showApp(result.username)}catch(e){}
+})();
 </script>
 </body></html>

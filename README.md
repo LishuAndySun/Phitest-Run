@@ -30,25 +30,13 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## 设置登录凭据
+## 账户与登录
 
-服务启动前必须设置 `PHITEST_USER` 和 `PHITEST_PASSWORD`。网页/API 使用 HTTP Basic Authentication。
+启动服务后打开首页，选择“注册”创建账户。用户名以明文保存，密码使用每个账户独立随机盐的 SHA-256 摘要保存；登录还需要 1Password 等兼容 TOTP 的 Authenticator 每 30 秒生成的 6 位代码。
 
-Windows PowerShell：
+首次注册会显示 TOTP 密钥和 `otpauth://` 配置链接。使用 Authenticator 扫描/打开链接，或手动输入密钥添加 PhiTest，然后用动态验证码登录。请将密钥保存在安全位置；忘记密码时必须提供该账户的 authenticator 验证码才能设置新密码。丢失 authenticator 密钥目前没有管理员恢复入口。
 
-```powershell
-$env:PHITEST_USER="your-user"
-$env:PHITEST_PASSWORD="replace-with-a-long-unique-password"
-```
-
-macOS / Linux：
-
-```bash
-export PHITEST_USER='your-user'
-export PHITEST_PASSWORD='replace-with-a-long-unique-password'
-```
-
-请使用自己的用户名和强密码，不要将凭据提交到版本库。
+多个账户共用谱面曲库，但各自的训练、Test、成绩和分析数据相互隔离。既有数据库中的历史场次会在首个账户创建时归到该账户。
 
 ## 启动服务
 
@@ -68,14 +56,14 @@ uvicorn server:app --host 0.0.0.0 --port 3249
 
 在同一局域网中，其他设备可访问：`http://<运行服务设备的局域网 IPv4 地址>:3249`。网页顶部的“访问地址”区域会列出服务检测到的本机 IPv4 URL。若地址无法访问，请检查操作系统防火墙、Wi-Fi 客户端隔离和网络路由设置。
 
-首次访问时，浏览器会询问 HTTP Basic 用户名和密码。
+首次访问时在首页注册或登录；登录会话存储在 HttpOnly cookie 中。
 
 ## 使用流程
 
 1. 在“添加谱面”中录入曲名、难度、等级和定数。
 2. 创建 Train 或 Test，选择本场谱面。一个场次最多包含 10,000 条谱面记录；同一谱面可以在同一场次重复加入。
 3. 在场次列表中点击“打开并录入”。每首成绩在页面中单独输入并保存。重新打开场次时，已保存的值会自动显示；尚未保存的输入不会写入数据库。
-4. Train 输入 0～1,000,000 的整数分数。Test 输入 0～100 的准确率；Test 至少包含 3 个不同曲名才会标记为正式结果。
+4. Train 输入 0～1,000,000 的整数分数。Test 每首输入 `N`、`Perfect`、`Good`、`Bad`、`Miss` 和整局 `MaxCombo`。系统校验 `N = P + G + B + M`，按 `ACC = (P + 0.65G) / N × 100` 和 `Score = 900000(P + 0.65G) / N + 100000MaxCombo / N` 计算；Test 至少包含 3 个不同曲名才会标记为正式结果。
 5. 在“单曲历史趋势”中选择谱面查看该谱面各次已保存成绩。
 6. “整组成绩趋势”为每个场次绘制单独曲线，每个点表示该场的一次游玩。可以勾选场次筛选要对比的曲线；图表支持点位提示、拖动、缩放和重置视图。
 
@@ -98,7 +86,8 @@ Web 数据库位于项目目录下的 `phitest.db`。SQLite 使用 WAL 模式；
 - 服务使用 HTTP，HTTP Basic 凭据在传输层没有加密。不要在不可信网络上直接暴露服务。
 - 不要把 `3249` 端口直接映射到公网。远程访问建议使用可信的私有 VPN；更广泛部署时应在反向代理上启用 HTTPS，并配置访问控制。
 - 运行服务的电脑应使用防火墙限制可访问网络，并定期备份数据库。
-- 当前版本面向个人使用，尚未实现多用户权限、审计日志、CSRF 防护或内置 HTTPS。
+- 登录会话通过 HttpOnly cookie 保存；HTTP 部署时凭据和 TOTP 代码仍未加密传输。不要在不可信网络上暴露服务。
+- SQLite 中保存密码摘要和 TOTP 密钥。数据库文件应视为敏感数据并做好访问控制与备份。
 
 ## 与命令行版的关系
 
