@@ -1,0 +1,16 @@
+{"session_id": "f75ecd3d-0b54-415f-b9d4-76255995bce0", "created_at": "2026-10-18 16:55:28", "chart_name": "Glaciaxion", "level": 12.0, "accuracy": 96.16}
+{"session_id": "f75ecd3d-0b54-415f-b9d4-76255995bce0", "created_at": "2026-10-18 16:55:28", "chart_name": "Skyscape", "level": 13.0, "accuracy": 96.6}
+{"session_id": "f75ecd3d-0b54-415f-b9d4-76255995bce0", "created_at": "2026-10-18 16:55:28", "chart_name": "Clock Paradox", "level": 6.0, "accuracy": 98.91}
+{"session_id": "7b2379f5-dc5c-45ee-a183-1baf4fc4a24e", "created_at": "2026-10-18 17:25:38", "chart_name": "Cryogenic", "level": 11.0, "accuracy": 94.93}
+{"session_id": "7b2379f5-dc5c-45ee-a183-1baf4fc4a24e", "created_at": "2026-10-18 17:25:38", "chart_name": "Winter [UP] Cube [DOWN]", "level": 8.0, "accuracy": 99.61}
+{"session_id": "7b2379f5-dc5c-45ee-a183-1baf4fc4a24e", "created_at": "2026-10-18 17:25:38", "chart_name": "[PRAW]", "level": 10.0, "accuracy": 94.83}
+{"session_id": "7b2379f5-dc5c-45ee-a183-1baf4fc4a24e", "created_at": "2026-10-18 17:25:38", "chart_name": "About The Universe", "level": 9.0, "accuracy": 99.27}
+{"session_id": "7b2379f5-dc5c-45ee-a183-1baf4fc4a24e", "created_at": "2026-10-18 17:25:38", "chart_name": "MOBILYS", "level": 9.0, "accuracy": 96.81}
+{"session_id": "500588a5-7eec-497d-8617-0eb9db0b9c65", "created_at": "2026-11-01 11:43:20", "chart_name": "Clock Paradox", "level": 12.0, "accuracy": 94.52}
+{"session_id": "500588a5-7eec-497d-8617-0eb9db0b9c65", "created_at": "2026-11-01 11:43:20", "chart_name": "Desultory Signals", "level": 14.0, "accuracy": 90.21}
+{"session_id": "500588a5-7eec-497d-8617-0eb9db0b9c65", "created_at": "2026-11-01 11:43:20", "chart_name": "What do you want more than a Happy ending?", "level": 11.0, "accuracy": 97.7}
+{"session_id": "500588a5-7eec-497d-8617-0eb9db0b9c65", "created_at": "2026-11-01 11:43:20", "chart_name": "Re_Nascence(Psystyle Ver.)", "level": 5.0, "accuracy": 99.09}
+{"session_id": "500588a5-7eec-497d-8617-0eb9db0b9c65", "created_at": "2026-11-01 11:43:20", "chart_name": "Ark", "level": 3.0, "accuracy": 98.93}
+{"session_id": "500588a5-7eec-497d-8617-0eb9db0b9c65", "created_at": "2026-11-01 11:43:20", "chart_name": "Lyrith迷宫リリス-", "level": 11.0, "accuracy": 97.51}
+{"session_id": "500588a5-7eec-497d-8617-0eb9db0b9c65", "created_at": "2026-11-01 11:43:20", "chart_name": "Incyde", "level": 12.0, "accuracy": 96.36}
+{"session_id": "500588a5-7eec-497d-8617-0eb9db0b9c65", "created_at": "2026-11-01 11:43:20", "chart_name": "WATER", "level": 9.0, "accuracy": 97.92}
