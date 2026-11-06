@@ -95,6 +95,7 @@ def init_db() -> None:
             password_salt TEXT NOT NULL,
             password_hash TEXT NOT NULL,
             totp_secret TEXT,
+            authenticator_setup_recovered INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL
         );
         CREATE TABLE IF NOT EXISTS auth_sessions (
@@ -114,6 +115,10 @@ def init_db() -> None:
         record_columns = {row[1] for row in db.execute("PRAGMA table_info(records)")}
         if "accuracy" not in record_columns:
             db.execute("ALTER TABLE records ADD COLUMN accuracy REAL")
+        user_columns = {row[1] for row in db.execute("PRAGMA table_info(users)")}
+        if "authenticator_setup_recovered" not in user_columns:
+            db.execute("ALTER TABLE users ADD COLUMN authenticator_setup_recovered INTEGER NOT NULL DEFAULT 0")
+            db.execute("UPDATE users SET authenticator_setup_recovered=1")
         db.execute("UPDATE sessions SET user_id=(SELECT MIN(id) FROM users) WHERE user_id IS NULL")
 
 
@@ -151,7 +156,7 @@ def verify_totp(secret: str, code: str) -> bool:
 def authenticate(request: Request):
     token = request.cookies.get(SESSION_COOKIE)
     if not token:
-        raise HTTPException(401, "请先登录")
+        raise HTTPException(401, "Please log in first")
     with database() as db:
         row = db.execute("""
             SELECT users.id, users.username FROM auth_sessions
@@ -159,7 +164,7 @@ def authenticate(request: Request):
             WHERE auth_sessions.token_hash=? AND auth_sessions.expires_at>?
         """, (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
     if not row:
-        raise HTTPException(401, "登录已过期，请重新登录")
+        raise HTTPException(401, "Your session has expired. Please log in again")
     return dict(row)
 
 
@@ -173,7 +178,7 @@ class CredentialsInput(BaseModel):
     def validate_username(cls, value: str) -> str:
         value = value.strip()
         if not value:
-            raise ValueError("用户名不能为空")
+            raise ValueError("Username cannot be empty")
         return value
 
 
@@ -205,21 +210,21 @@ def authenticator_setup(username: str, secret: str) -> dict:
 @app.post("/api/auth/register")
 def register(data: RegistrationInput, request: Request):
     if request.headers.get("origin") and request.headers["origin"] != str(request.base_url).rstrip("/"):
-        raise HTTPException(403, "请求来源无效")
+        raise HTTPException(403, "Invalid request origin")
     secret = new_totp_secret()
     salt = secrets.token_hex(16)
     username = data.username.strip()
     if not username:
-        raise HTTPException(400, "用户名不能为空")
+        raise HTTPException(400, "Username cannot be empty")
     try:
         with database() as db:
             db.execute("""
-                INSERT INTO users(username,password_salt,password_hash,totp_secret,created_at)
-                VALUES(?,?,?,?,?)
+                                INSERT INTO users(username,password_salt,password_hash,totp_secret,authenticator_setup_recovered,created_at)
+                                VALUES(?,?,?,?,?,?)
             """, (username, salt, password_digest(data.password, salt), secret,
-                  datetime.now().isoformat()))
+                                    0, datetime.now().isoformat()))
     except sqlite3.IntegrityError:
-        raise HTTPException(409, "用户名已存在")
+        raise HTTPException(409, "Username already exists")
     with database() as db:
         db.execute("UPDATE sessions SET user_id=(SELECT id FROM users WHERE username=? COLLATE NOCASE) WHERE user_id IS NULL",
                    (username,))
@@ -228,12 +233,21 @@ def register(data: RegistrationInput, request: Request):
 
 @app.post("/api/auth/authenticator-setup")
 def existing_authenticator_setup(data: AuthenticatorSetupInput):
-    with connect() as db:
-        row = db.execute("SELECT username,password_salt,password_hash,totp_secret FROM users WHERE username=? COLLATE NOCASE",
+    with database() as db:
+        row = db.execute("SELECT id,username,password_salt,password_hash,totp_secret,authenticator_setup_recovered FROM users WHERE username=? COLLATE NOCASE",
                          (data.username.strip(),)).fetchone()
     if (not row or not secrets.compare_digest(password_digest(data.password, row["password_salt"]),
                                                row["password_hash"])):
-        raise HTTPException(401, "用户名或密码错误")
+        raise HTTPException(401, "Incorrect username or password")
+    if row["authenticator_setup_recovered"]:
+        raise HTTPException(409, "Authenticator setup recovery has already been used")
+    with database() as db:
+        updated = db.execute("""
+            UPDATE users SET authenticator_setup_recovered=1
+            WHERE id=? AND authenticator_setup_recovered=0
+        """, (row["id"],)).rowcount
+    if updated != 1:
+        raise HTTPException(409, "Authenticator setup recovery has already been used")
     return authenticator_setup(row["username"], row["totp_secret"])
 
 
@@ -244,7 +258,7 @@ def login(data: CredentialsInput, response: Response):
                          (data.username,)).fetchone()
     if (not row or not secrets.compare_digest(password_digest(data.password, row["password_salt"]), row["password_hash"])
             or not row["totp_secret"] or not verify_totp(row["totp_secret"], data.code)):
-        raise HTTPException(401, "用户名、密码或验证器代码错误")
+        raise HTTPException(401, "Incorrect username, password, or authenticator code")
     token = secrets.token_urlsafe(32)
     with database() as db:
         db.execute("INSERT INTO auth_sessions(token_hash,user_id,expires_at) VALUES(?,?,?)",
@@ -259,12 +273,12 @@ def reset_password(data: PasswordResetInput):
         row = db.execute("SELECT id,totp_secret FROM users WHERE username=? COLLATE NOCASE",
                          (data.username,)).fetchone()
         if not row or not verify_totp(row["totp_secret"] or "", data.code):
-            raise HTTPException(401, "用户名或验证器代码错误")
+            raise HTTPException(401, "Incorrect username or authenticator code")
         salt = secrets.token_hex(16)
         db.execute("UPDATE users SET password_salt=?,password_hash=? WHERE id=?",
                    (salt, password_digest(data.new_password, salt), row["id"]))
         db.execute("DELETE FROM auth_sessions WHERE user_id=?", (row["id"],))
-    return {"message": "密码已重置，请重新登录"}
+    return {"message": "Password reset. Please log in again"}
 
 
 @app.post("/api/auth/logout")
@@ -275,7 +289,7 @@ def logout(request: Request, response: Response):
             db.execute("DELETE FROM auth_sessions WHERE token_hash=?",
                        (hashlib.sha256(token.encode()).hexdigest(),))
     response.delete_cookie(SESSION_COOKIE)
-    return {"message": "已退出登录"}
+    return {"message": "Logged out"}
 
 
 @app.get("/api/auth/me")
@@ -308,7 +322,7 @@ class ChartInput(BaseModel):
     def validate_song(cls, value: str) -> str:
         value = value.strip()
         if not value:
-            raise ValueError("曲名不能为空")
+            raise ValueError("Song title cannot be empty")
         return value
 
 
@@ -323,7 +337,7 @@ class SessionInput(BaseModel):
     def validate_name(cls, value: str) -> str:
         value = value.strip()
         if not value:
-            raise ValueError("名称不能为空")
+            raise ValueError("Name cannot be empty")
         return value
 
 
@@ -340,13 +354,17 @@ class TestJudgementInput(BaseModel):
     max_combo: int = Field(ge=0)
 
 
+class ImportPayload(BaseModel):
+    data: dict
+
+
 def calculate_single_test_score(data: TestJudgementInput) -> dict[str, float | int]:
     total = data.total_notes
     judgement_count = data.perfect + data.good + data.bad + data.miss
     if total == 0:
         raise ValueError("Note 总数 N 不能为 0")
     if judgement_count != total:
-        raise ValueError("判定数量必须满足 N = P + G + B + M")
+        raise ValueError("Judgement counts must satisfy N = P + G + B + M")
     if data.max_combo > total:
         raise ValueError("MaxCombo 不能大于 Note 总数")
     accuracy = (data.perfect + 0.65 * data.good) / total * 100
@@ -381,7 +399,7 @@ def get_charts(user=Depends(authenticate)):
 def add_chart(data: ChartInput, user=Depends(authenticate)):
     difficulty = data.difficulty.upper()
     if difficulty not in {"EZ", "HD", "IN", "AT"}:
-        raise HTTPException(400, "难度必须为 EZ、HD、IN 或 AT")
+        raise HTTPException(400, "Difficulty must be EZ, HD, IN, or AT")
     try:
         with database() as db:
             db.execute("INSERT OR IGNORE INTO songs(name) VALUES(?)", (data.song,))
@@ -389,22 +407,42 @@ def add_chart(data: ChartInput, user=Depends(authenticate)):
             db.execute("INSERT INTO charts(song_id,difficulty,level,constant) VALUES(?,?,?,?)",
                        (song["id"], difficulty, data.level, data.constant))
     except sqlite3.IntegrityError:
-        raise HTTPException(409, "该谱面已经存在")
+        raise HTTPException(409, "This chart already exists")
     return {"message": "添加成功"}
+
+
+@app.put("/api/charts/{chart_id}")
+def update_chart(chart_id: int, data: ChartInput, user=Depends(authenticate)):
+    difficulty = data.difficulty.upper()
+    if difficulty not in {"EZ", "HD", "IN", "AT"}:
+        raise HTTPException(400, "Difficulty must be EZ, HD, IN, or AT")
+    try:
+        with database() as db:
+            chart = db.execute("SELECT song_id FROM charts WHERE id=?", (chart_id,)).fetchone()
+            if not chart:
+                raise HTTPException(404, "Chart not found")
+            db.execute("INSERT OR IGNORE INTO songs(name) VALUES(?)", (data.song,))
+            song = db.execute("SELECT id FROM songs WHERE name=?", (data.song,)).fetchone()
+            db.execute("""
+                UPDATE charts SET song_id=?,difficulty=?,level=?,constant=? WHERE id=?
+            """, (song["id"], difficulty, data.level, data.constant, chart_id))
+    except sqlite3.IntegrityError:
+        raise HTTPException(409, "This chart already exists")
+    return {"message": "Chart updated"}
 
 
 def insert_session(data: SessionInput, user_id: int) -> int:
     with database() as db:
         for chart_id in data.charts:
             if not db.execute("SELECT id FROM charts WHERE id=?", (chart_id,)).fetchone():
-                raise HTTPException(404, "谱面不存在")
+                raise HTTPException(404, "Chart not found")
         cursor = db.execute(
             "INSERT INTO sessions(name,created_at,kind,power,user_id) VALUES(?,?,?,?,?)",
             (data.name, datetime.now().isoformat(), data.kind, data.power, user_id),
         )
         session_id = cursor.lastrowid
         if session_id is None:
-            raise RuntimeError("创建记录后没有返回 ID")
+            raise RuntimeError("No ID was returned after creating the record")
         for sequence, chart_id in enumerate(data.charts, start=1):
             db.execute("INSERT INTO session_charts(session_id,chart_id,sequence) VALUES(?,?,?)",
                        (session_id, chart_id, sequence))
@@ -414,13 +452,13 @@ def insert_session(data: SessionInput, user_id: int) -> int:
 @app.post("/api/sessions")
 def create_session(data: SessionInput, user=Depends(authenticate)):
     data.kind = "train"
-    return {"id": insert_session(data, user["id"]), "message": "训练创建成功"}
+    return {"id": insert_session(data, user["id"]), "message": "Training session created"}
 
 
 @app.post("/api/tests")
 def create_test(data: SessionInput, user=Depends(authenticate)):
     data.kind = "test"
-    return {"id": insert_session(data, user["id"]), "message": "测试创建成功"}
+    return {"id": insert_session(data, user["id"]), "message": "Test session created"}
 
 
 @app.get("/api/sessions")
@@ -443,7 +481,7 @@ def get_session(session_id: int, user=Depends(authenticate)):
         session = db.execute("SELECT * FROM sessions WHERE id=? AND user_id=?",
                       (session_id, user["id"])).fetchone()
         if not session:
-            raise HTTPException(404, "记录不存在")
+            raise HTTPException(404, "Record not found")
         rows = db.execute("""
             SELECT sc.id AS session_chart_id,sc.sequence,songs.name AS song_name,
                    charts.difficulty,charts.level,charts.constant,records.score,records.accuracy
@@ -464,13 +502,13 @@ def save_score(session_id: int, record_id: int, data: ScoreInput,
             WHERE sc.id=? AND sc.session_id=? AND s.kind='train' AND s.user_id=?
         """, (record_id, session_id, user["id"])).fetchone()
         if not row:
-            raise HTTPException(404, "训练曲目不存在")
+            raise HTTPException(404, "Training chart not found")
         db.execute("""
             INSERT INTO records(session_chart_id,score,played_at,accuracy) VALUES(?,?,?,NULL)
             ON CONFLICT(session_chart_id) DO UPDATE SET score=excluded.score,
             accuracy=NULL,played_at=excluded.played_at
         """, (record_id, data.score, datetime.now().isoformat()))
-    return {"message": "成绩保存成功"}
+    return {"message": "Score saved"}
 
 
 @app.put("/api/tests/{session_id}/records/{record_id}")
@@ -486,13 +524,13 @@ def save_test_judgement(session_id: int, record_id: int, data: TestJudgementInpu
             WHERE sc.id=? AND sc.session_id=? AND s.kind='test' AND s.user_id=?
         """, (record_id, session_id, user["id"])).fetchone()
         if not row:
-            raise HTTPException(404, "测试谱面不存在")
+            raise HTTPException(404, "Test chart not found")
         db.execute("""
             INSERT INTO records(session_chart_id,score,played_at,accuracy) VALUES(?,?,?,?)
             ON CONFLICT(session_chart_id) DO UPDATE SET score=excluded.score,
             accuracy=excluded.accuracy,played_at=excluded.played_at
         """, (record_id, calculation["score"], datetime.now().isoformat(), calculation["accuracy"]))
-    return {"message": "测试判定保存成功", "accuracy": calculation["accuracy"],
+    return {"message": "Test judgement saved", "accuracy": calculation["accuracy"],
             "score": calculation["score"]}
 
 
@@ -500,7 +538,7 @@ def calculate_test_result(db: sqlite3.Connection, session_id: int, user_id: int)
     session = db.execute("SELECT power FROM sessions WHERE id=? AND kind='test' AND user_id=?",
                          (session_id, user_id)).fetchone()
     if not session:
-        raise HTTPException(404, "测试不存在")
+        raise HTTPException(404, "Test not found")
     rows = db.execute("""
         SELECT songs.name AS chart_name,charts.level,records.accuracy
         FROM records JOIN session_charts ON session_charts.id=records.session_chart_id
@@ -569,6 +607,112 @@ def summary(user=Depends(authenticate)):
              ORDER BY records.played_at,sessions.id,session_charts.sequence
         """, (user["id"],)).fetchall()
     return {"summary": dict(row), "history": [dict(item) for item in history]}
+
+
+@app.get("/api/data/export")
+def export_data(user=Depends(authenticate)):
+    with connect() as db:
+        sessions = db.execute("""
+            SELECT id,name,created_at,kind,power
+            FROM sessions WHERE user_id=? ORDER BY id
+        """, (user["id"],)).fetchall()
+        charts = db.execute("""
+            SELECT DISTINCT songs.name AS song,charts.difficulty,charts.level,charts.constant
+            FROM charts JOIN songs ON songs.id=charts.song_id
+            JOIN session_charts ON session_charts.chart_id=charts.id
+            JOIN sessions ON sessions.id=session_charts.session_id
+            WHERE sessions.user_id=? ORDER BY songs.name,charts.difficulty
+        """, (user["id"],)).fetchall()
+        session_data = []
+        for session in sessions:
+            chart_rows = db.execute("""
+                SELECT songs.name AS song,charts.difficulty,charts.level,charts.constant,
+                       sc.sequence,records.score,records.accuracy,records.played_at
+                FROM session_charts sc JOIN charts ON charts.id=sc.chart_id
+                JOIN songs ON songs.id=charts.song_id
+                LEFT JOIN records ON records.session_chart_id=sc.id
+                WHERE sc.session_id=? ORDER BY sc.sequence
+            """, (session["id"],)).fetchall()
+            session_data.append({
+                "name": session["name"], "created_at": session["created_at"],
+                "kind": session["kind"], "power": session["power"],
+                "charts": [dict(row) for row in chart_rows],
+            })
+    payload = {"format": "phitest-export", "version": 1,
+               "exported_at": datetime.now().isoformat(),
+               "charts": [dict(row) for row in charts], "sessions": session_data}
+    content = json.dumps(payload, ensure_ascii=False, indent=2)
+    return Response(content=content, media_type="application/json",
+                    headers={"Content-Disposition": "attachment; filename=phitest-export.json"})
+
+
+def import_export_data(data: dict, user_id: int) -> dict[str, int]:
+    if data.get("format") != "phitest-export" or data.get("version") != 1:
+        raise HTTPException(400, "不支持的导出文件格式或版本")
+    sessions = data.get("sessions")
+    if not isinstance(sessions, list):
+        raise HTTPException(400, "导出文件缺少有效的场次数据")
+    chart_count = session_count = record_count = 0
+    with database() as db:
+        chart_ids = {}
+        for chart in data.get("charts", []):
+            if not isinstance(chart, dict) or not isinstance(chart.get("song"), str) or not isinstance(chart.get("difficulty"), str):
+                raise HTTPException(400, "导出文件包含无效谱面")
+            song = chart["song"].strip()
+            difficulty = chart["difficulty"].upper()
+            if not song or difficulty not in {"EZ", "HD", "IN", "AT"}:
+                raise HTTPException(400, "导出文件包含无效谱面")
+            db.execute("INSERT OR IGNORE INTO songs(name) VALUES(?)", (song,))
+            song_row = db.execute("SELECT id FROM songs WHERE name=?", (song,)).fetchone()
+            db.execute("""
+                INSERT OR IGNORE INTO charts(song_id,difficulty,level,constant) VALUES(?,?,?,?)
+            """, (song_row["id"], difficulty, chart.get("level"), chart.get("constant")))
+            chart_row = db.execute("SELECT id FROM charts WHERE song_id=? AND difficulty=?",
+                                   (song_row["id"], difficulty)).fetchone()
+            chart_ids[(song, difficulty)] = chart_row["id"]
+            chart_count += 1
+        for session in sessions:
+            if not isinstance(session, dict) or not isinstance(session.get("name"), str):
+                raise HTTPException(400, "导出文件包含无效场次")
+            kind = session.get("kind", "train")
+            power = session.get("power", 1.0)
+            if kind not in {"train", "test"} or not isinstance(power, (int, float)) or power <= 0:
+                raise HTTPException(400, "导出文件包含无效场次")
+            chart_rows = session.get("charts")
+            if not isinstance(chart_rows, list) or not chart_rows:
+                raise HTTPException(400, "场次必须包含谱面")
+            cursor = db.execute("""
+                INSERT INTO sessions(name,created_at,kind,power,user_id) VALUES(?,?,?,?,?)
+            """, (session["name"].strip(), session.get("created_at", datetime.now().isoformat()),
+                  kind, power, user_id))
+            new_session_id = cursor.lastrowid
+            session_count += 1
+            for fallback_sequence, item in enumerate(chart_rows, start=1):
+                key = (str(item.get("song", "")).strip(), str(item.get("difficulty", "")).upper())
+                chart_id = chart_ids.get(key)
+                if chart_id is None:
+                    raise HTTPException(400, "场次引用了导出文件中不存在的谱面")
+                sequence = item.get("sequence", fallback_sequence)
+                sc_cursor = db.execute("""
+                    INSERT INTO session_charts(session_id,chart_id,sequence) VALUES(?,?,?)
+                """, (new_session_id, chart_id, sequence))
+                session_chart_id = sc_cursor.lastrowid
+                if item.get("score") is not None:
+                    score = item["score"]
+                    accuracy = item.get("accuracy")
+                    if not isinstance(score, (int, float)) or not 0 <= score <= 1000000:
+                        raise HTTPException(400, "导出文件包含无效成绩")
+                    db.execute("""
+                        INSERT INTO records(session_chart_id,score,played_at,accuracy) VALUES(?,?,?,?)
+                    """, (session_chart_id, score, item.get("played_at", datetime.now().isoformat()), accuracy))
+                    record_count += 1
+    return {"charts": chart_count, "sessions": session_count, "records": record_count}
+
+
+@app.post("/api/data/import")
+def import_data(payload: ImportPayload, user=Depends(authenticate)):
+    result = import_export_data(payload.data, user["id"])
+    return {"message": f"已导入 {result['sessions']} 个场次和 {result['records']} 条成绩", **result}
 
 
 if __name__ == "__main__":

@@ -5,41 +5,33 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PhiTest Training</title>
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#e8edf5;background:#10151f}
-*{box-sizing:border-box}body{margin:0}header{padding:20px max(18px,calc((100vw - 1050px)/2));background:#171f2d;border-bottom:1px solid #293449}
-h1{font-size:23px;margin:0}header p{margin:6px 0 0;color:#9eacc1;font-size:13px}
-main{max-width:1050px;margin:auto;padding:18px;display:grid;gap:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.card{background:#192333;border:1px solid #2a3950;border-radius:14px;padding:16px}
-h2{font-size:17px;margin:0 0 14px}.muted{color:#9eacc1;font-size:13px}
-.metric{font-size:27px;font-weight:700;margin-top:8px}
-input,select,textarea,button{font:inherit;border-radius:9px;padding:11px;border:1px solid #35445c;background:#101a29;color:#edf3fb;width:100%;margin:5px 0}
-button{background:#316fe5;border:0;font-weight:650;cursor:pointer}
-button.secondary{background:#334155}button:disabled{opacity:.5}
-.row{display:grid;grid-template-columns:2fr 1fr;gap:8px}
-.listitem{padding:12px 0;border-top:1px solid #2b394d}
-.session-editor{grid-column:1/-1}.session-editor .row{grid-template-columns:minmax(0,1fr)}
-.session-editor .row>div{display:grid;grid-template-columns:minmax(120px,1fr) minmax(100px,180px) auto auto;gap:8px;align-items:center}
-.session-editor label{overflow-wrap:anywhere}.session-editor input,.session-editor button{margin:0}
-.chartrow{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center}
-.chartrow input{margin:3px 0}
-canvas{width:100%;height:220px;background:#121b29;border-radius:10px}
-.chart-wrap{position:relative;touch-action:none}.chart-tip{position:absolute;display:none;pointer-events:none;z-index:2;padding:8px 10px;background:#080d15;border:1px solid #42536d;border-radius:6px;color:#edf3fb;font-size:12px;white-space:nowrap;box-shadow:0 4px 14px #0008}
-.chart-actions{display:flex;justify-content:flex-end}.chart-actions button{width:auto;padding:6px 10px;font-size:12px}
-.tag{font-size:12px;color:#9dbcfb}
-@media(max-width:520px){.row{grid-template-columns:1fr}.chartrow{grid-template-columns:1fr 100px}.session-editor .row>div{grid-template-columns:1fr 1fr}.session-editor label{grid-column:1/-1}}
+:root{font-family:"Avenir Next",Avenir,"Segoe UI",sans-serif;color:#172c28;background:#f3f2eb;--ink:#172c28;--muted:#697771;--line:#d9ded4;--paper:#fffefa;--green:#126b55;--coral:#df654b;--mint:#d9eee2;--display:Georgia,"Times New Roman",serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 92% 0%,#e1eee3 0,transparent 32%),#f3f2eb;min-height:100vh}header{padding:22px max(20px,calc((100vw - 1160px)/2));display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);background:#f8f7f1eF;position:sticky;top:0;z-index:5;backdrop-filter:blur(14px)}
+h1{font:700 24px var(--display);margin:0;letter-spacing:0}header p{margin:5px 0 0;color:var(--muted);font-size:12px}#accountBar{color:var(--ink);font-size:13px;white-space:nowrap}#accountBar button{margin-left:10px}
+main{max-width:1200px;margin:auto;padding:26px 22px 64px;display:grid;gap:18px}
+#appContent{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px}.grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:20px;box-shadow:0 3px 14px #183c2b08}
+h2{font:700 18px var(--display);margin:0 0 15px;color:var(--ink)}.muted{color:var(--muted);font-size:13px;line-height:1.55}
+.metric{font:700 31px var(--display);margin-top:10px;color:var(--green)}.grid .card{border-top:3px solid var(--green);min-height:104px}.grid .card:nth-child(3){border-top-color:var(--coral)}
+#appContent>.card:nth-child(2),#appContent>.card:nth-child(3){grid-column:span 6}#appContent>.card:nth-child(4),#appContent>.card:nth-child(5){grid-column:span 6}#appContent>.card:nth-child(6){grid-column:span 6}#appContent>.card:nth-child(7){grid-column:span 6}#appContent>.card:nth-child(8){grid-column:1/-1}#appContent>.card:nth-child(9),#appContent>.card:nth-child(10){grid-column:span 6}
+input,select,textarea,button{font:inherit;border-radius:3px;padding:10px 12px;border:1px solid #cbd4ca;background:#fff;color:var(--ink);width:100%;margin:5px 0;min-height:42px}input:focus,select:focus,textarea:focus{outline:2px solid #74aa91;outline-offset:1px}button{background:var(--green);color:white;border:0;font-weight:700;cursor:pointer;transition:background .16s,transform .16s}button:hover{background:#0c5846;transform:translateY(-1px)}button.secondary{background:#e8eee7;color:var(--ink);border:1px solid var(--line)}button.secondary:hover{background:#dce8dd}button:disabled{opacity:.5}
+.row{display:grid;grid-template-columns:2fr 1fr;gap:8px}.listitem{padding:12px 0;border-top:1px solid var(--line)}.session-editor{grid-column:1/-1}.session-editor .row{grid-template-columns:minmax(0,1fr)}.session-editor .row>div{display:grid;grid-template-columns:minmax(120px,1fr) minmax(100px,180px) auto auto;gap:8px;align-items:center}.session-editor label{overflow-wrap:anywhere}.session-editor input,.session-editor button{margin:0}
+.chartrow{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:10px;align-items:center}.chartrow input{margin:3px 0}canvas{width:100%;height:220px;background:#edf2eb;border:1px solid var(--line);border-radius:3px}.chart-wrap{position:relative;touch-action:none}.chart-tip{position:absolute;display:none;pointer-events:none;z-index:2;padding:8px 10px;background:var(--ink);border:1px solid #42536d;border-radius:3px;color:#fff;font-size:12px;white-space:nowrap;box-shadow:0 4px 14px #0003}.chart-actions{display:flex;justify-content:flex-end;gap:6px}.chart-actions button{width:auto;padding:6px 10px;font-size:12px;min-height:34px}.tag{font-size:12px;color:var(--green)}
+#authPanel{max-width:510px;margin:7vh auto;padding:22px}.session-editor .row>div{min-width:0}
+@media(max-width:760px){header{padding:16px 18px}header p{max-width:55vw}main{padding:18px 14px 40px}#appContent{grid-template-columns:1fr;gap:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#appContent>.card:nth-child(n){grid-column:1/-1}.card{padding:16px}.metric{font-size:27px}}
+@media(max-width:480px){.row{grid-template-columns:1fr}#accountBar{font-size:0}#accountName{font-size:12px}.chartrow{grid-template-columns:minmax(0,1fr) 76px auto;gap:5px}.chartrow button{padding:7px 8px;font-size:12px}.session-editor .row>div{grid-template-columns:1fr 1fr}.session-editor label{grid-column:1/-1}.chart-actions{flex-wrap:wrap}}
 </style>
 </head>
 <body>
-<header><h1>PhiTest Training</h1><p>训练计划 · 手动成绩录入 · 单曲与整组分析 <span id="accountBar" style="display:none"><span id="accountName"></span> · <button class="secondary" style="width:auto;padding:4px 9px" onclick="logout()">退出</button></span></p></header>
+<header><div><h1>PhiTest <span style="color:#126b55">/</span> Training</h1><p id="appSubtitle">Training plans · Manual score entry · Song and session analysis</p></div><span id="accountBar" style="display:none"><span id="accountName"></span><button id="logoutButton" class="secondary" style="width:auto;padding:4px 9px;min-height:32px" onclick="logout()">Log out</button></span><button id="languageToggle" class="secondary" style="width:auto;padding:4px 9px;min-height:32px" onclick="toggleLanguage()">中文</button></header>
 <main id="authPanel" style="display:none">
  <section class="card">
-  <h2>账户</h2>
-  <div class="row"><select id="authMode" onchange="updateAuthMode()"><option value="login">登录</option><option value="register">注册</option><option value="reset">忘记密码</option><option value="setup">找回验证器配置</option></select><span class="muted" id="authHint">请输入账户信息</span></div>
-  <input id="authUsername" autocomplete="username" placeholder="用户名">
-  <input id="authPassword" type="password" autocomplete="current-password" placeholder="密码（至少 8 位）">
-  <input id="authCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Authenticator 验证码（6 位）">
-  <button id="authSubmit" onclick="submitAuth()">登录</button>
+  <h2 id="accountTitle">Account</h2>
+  <div class="row"><select id="authMode" onchange="updateAuthMode()"><option value="login">Log in</option><option value="register">Register</option><option value="reset">Forgot password</option><option value="setup">Recover authenticator setup</option></select><span class="muted" id="authHint">Enter your account information</span></div>
+  <input id="authUsername" autocomplete="username" placeholder="Username">
+  <input id="authPassword" type="password" autocomplete="current-password" placeholder="Password (at least 8 characters)">
+  <input id="authCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Authenticator code (6 digits)">
+  <button id="authSubmit" onclick="submitAuth()">Log in</button>
   <div id="authMessage" class="muted" role="status"></div>
   <div id="totpSetup" class="muted" style="display:none;overflow-wrap:anywhere"></div>
  </section>
@@ -47,55 +39,91 @@ canvas{width:100%;height:220px;background:#121b29;border-radius:10px}
 <main>
 <div id="appContent">
 <section class="grid">
- <div class="card"><div class="muted">训练场次</div><div class="metric" id="sessions">—</div></div>
- <div class="card"><div class="muted">成绩记录</div><div class="metric" id="plays">—</div></div>
- <div class="card"><div class="muted">个人最高单曲分</div><div class="metric" id="best">—</div></div>
- <div class="card"><div class="muted">平均单曲分</div><div class="metric" id="average">—</div></div>
+ <div class="card"><div class="muted" id="sessionsLabel">Sessions</div><div class="metric" id="sessions">—</div></div>
+ <div class="card"><div class="muted" id="playsLabel">Score records</div><div class="metric" id="plays">—</div></div>
+ <div class="card"><div class="muted" id="bestLabel">Best song score</div><div class="metric" id="best">—</div></div>
+ <div class="card"><div class="muted" id="averageLabel">Average song score</div><div class="metric" id="average">—</div></div>
 </section>
 <section class="card">
-<h2>访问地址</h2><div id="accessUrls" class="muted">正在获取地址…</div>
+<h2 id="accessTitle">Access URLs</h2><div id="accessUrls" class="muted">Loading addresses...</div>
 </section>
 <section class="card">
-<h2>① 添加谱面</h2>
-<div class="row"><input id="song" placeholder="曲名，例如 Glaciaxion"><input id="artist" placeholder="作曲者（可空）"></div>
-<div class="row"><select id="diff"><option>EZ</option><option>HD</option><option selected>IN</option><option>AT</option></select><input id="level" type="number" placeholder="游戏等级，例如 12"></div>
-<input id="constant" type="number" step="0.1" placeholder="定数，例如 12.0">
-<button onclick="addChart()">保存谱面</button>
+<h2 id="backupTitle">Data backup</h2>
+<div class="row"><button onclick="exportData()">Export account data</button><button class="secondary" onclick="$('importFile').click()">Import data file</button></div>
+<input id="importFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this.files[0])">
+<div id="dataMessage" class="muted" role="status">Importing appends sessions and does not delete existing data.</div>
 </section>
 <section class="card">
-<h2>② 创建连续训练（1～10,000 条）</h2>
-<input id="sessionName" placeholder="训练名称，例如 橙色37冲金训练">
-<div id="chartChoices" class="muted">正在加载曲库…</div>
-<textarea id="sessionNote" rows="2" placeholder="训练备注（可选）"></textarea>
-<button onclick="createSession()">创建训练</button>
+<h2 id="addChartTitle">1. Add chart</h2>
+<div class="row"><input id="song" placeholder="Song title, e.g. Glaciaxion"><input id="artist" placeholder="Composer (optional)"></div>
+<div class="row"><select id="diff"><option>EZ</option><option>HD</option><option selected>IN</option><option>AT</option></select><input id="level" type="number" placeholder="Game level, e.g. 12"></div>
+<input id="constant" type="number" step="0.1" placeholder="Chart constant, e.g. 12.0">
+<div class="row"><button id="chartSubmit" onclick="addChart()">Save chart</button><button id="chartCancel" class="secondary" style="display:none" onclick="cancelChartEdit()">Cancel edit</button></div>
 </section>
 <section class="card">
-<h2>③ 创建 Test（按 PhiTest 公式）</h2>
-<input id="testName" placeholder="测试名称，例如正式测试 2026-11-04">
-<div class="row"><input id="testPower" type="number" step="0.1" min="0.1" value="1" placeholder="等级权重 p"><button onclick="createTest()">创建 Test</button></div>
-<div class="muted">Test 录入的是准确率（0～100），至少 3 张不同谱面才会标记为正式结果。</div>
+<h2 id="trainingTitle">2. Create training session (1-10,000 charts)</h2>
+<input id="sessionName" placeholder="Session name, e.g. Orange 37 gold push">
+<div id="chartChoices" class="muted">Loading chart library...</div>
+<textarea id="sessionNote" rows="2" placeholder="Training notes (optional)"></textarea>
+<button onclick="createSession()">Create training</button>
 </section>
 <section class="card">
-<h2>④ 训练 / Test 记录</h2><div id="sessionsList" class="muted">暂无记录</div>
+<h2 id="testTitle">3. Create Test (PhiTest formula)</h2>
+<input id="testName" placeholder="Test name, e.g. Official test 2026-11-04">
+<div class="row"><input id="testPower" type="number" step="0.1" min="0.1" value="1" placeholder="Level weight p"><button onclick="createTest()">Create Test</button></div>
+<div class="muted">Test uses accuracy (0-100). At least 3 different charts are required for an official result.</div>
 </section>
 <section class="card">
-<h2>④ 整组成绩趋势</h2><div class="chart-wrap"><canvas id="trend" width="1000" height="260"></canvas><div class="chart-tip"></div></div>
-<div class="chart-actions"><button class="secondary" onclick="selectTrendSessions(true)">全选场次</button><button class="secondary" onclick="selectTrendSessions(false)">清空选择</button></div>
+<h2 id="recordsTitle">4. Training / Test records</h2><div id="sessionsList" class="muted">No records yet</div>
+</section>
+<section class="card">
+<h2 id="trendTitle">4. Session score trend</h2><div class="chart-wrap"><canvas id="trend" width="1000" height="260"></canvas><div class="chart-tip"></div></div>
+<div class="chart-actions"><button class="secondary" onclick="selectTrendSessions(true)">Select all sessions</button><button class="secondary" onclick="selectTrendSessions(false)">Clear selection</button></div>
 <div id="trendSessions" class="muted"></div>
-<div class="chart-actions"><button class="secondary" onclick="resetChart('trend')" title="重置缩放和平移">重置视图</button></div>
+<div class="chart-actions"><button class="secondary" onclick="resetChart('trend')" title="Reset zoom and pan">Reset view</button></div>
 <div id="trendLegend" class="muted"></div>
-<div class="muted">每条线代表一场 Train 或 Test；每个点代表该场中的一次游玩。</div>
+<div id="trendHint" class="muted">Each line represents a Train or Test session; each point represents one play in that session.</div>
 </section>
 <section class="card">
-<h2>⑤ 单曲历史趋势</h2>
-<select id="chartForHistory" onchange="loadChartHistory()"><option value="">选择谱面</option></select>
+<h2 id="historyTitle">5. Song history trend</h2>
+<select id="chartForHistory" onchange="loadChartHistory()"><option value="">Select a chart</option></select>
 <div class="chart-wrap"><canvas id="songTrend" width="1000" height="260"></canvas><div class="chart-tip"></div></div>
-<div class="chart-actions"><button class="secondary" onclick="resetChart('songTrend')" title="重置缩放和平移">重置视图</button></div>
+<div class="chart-actions"><button class="secondary" onclick="resetChart('songTrend')" title="Reset zoom and pan">Reset view</button></div>
 </section>
 </div>
 </main>
 <script>
 const $ = id => document.getElementById(id);
+const translations={
+ en:{toggle:'中文',subtitle:'Training plans · Manual score entry · Song and session analysis',logout:'Log out',account:'Account',login:'Log in',register:'Register',reset:'Forgot password',setup:'Recover authenticator setup',accountHint:'Enter your account information',username:'Username',password:'Password (at least 8 characters)',code:'Authenticator code (6 digits)',sessions:'Sessions',plays:'Score records',best:'Best song score',average:'Average song score',access:'Access URLs',backup:'Data backup',export:'Export account data',import:'Import data file',importHint:'Importing appends sessions and does not delete existing data',addChart:'1. Add chart',song:'Song title, e.g. Glaciaxion',artist:'Composer (optional)',level:'Game level, e.g. 12',constant:'Chart constant, e.g. 12.0',saveChart:'Save chart',cancel:'Cancel edit',training:'2. Create training session (1-10,000 charts)',sessionName:'Session name, e.g. Orange 37 gold push',chartLibrary:'Loading chart library...',notes:'Training notes (optional)',createTraining:'Create training',test:'3. Create Test (PhiTest formula)',testName:'Test name, e.g. Official test 2026-11-04',power:'Level weight p',createTest:'Create Test',testHint:'Test uses accuracy (0-100). At least 3 different charts are required for an official result',records:'4. Training / Test records',noRecords:'No records yet',trend:'4. Session score trend',selectAll:'Select all sessions',clear:'Clear selection',resetView:'Reset view',trendHint:'Each line represents a Train or Test session; each point represents one play in that session',history:'5. Song history trend',selectChart:'Select a chart'},
+ zh:{toggle:'English',subtitle:'训练计划 · 手动成绩录入 · 单曲与整组分析',logout:'退出',account:'账户',login:'登录',register:'注册',reset:'忘记密码',setup:'找回验证器配置',accountHint:'请输入账户信息',username:'用户名',password:'密码（至少 8 位）',code:'Authenticator 验证码（6 位）',sessions:'训练场次',plays:'成绩记录',best:'个人最高单曲分',average:'平均单曲分',access:'访问地址',backup:'数据备份',export:'导出当前账户数据',import:'导入数据文件',importHint:'导入会追加场次，不会删除现有数据',addChart:'① 添加谱面',song:'曲名，例如 Glaciaxion',artist:'作曲者（可空）',level:'游戏等级，例如 12',constant:'定数，例如 12.0',saveChart:'保存谱面',cancel:'取消编辑',training:'② 创建连续训练（1～10,000 条）',sessionName:'训练名称，例如 橙色37冲金训练',chartLibrary:'正在加载曲库…',notes:'训练备注（可选）',createTraining:'创建训练',test:'③ 创建 Test（按 PhiTest 公式）',testName:'测试名称，例如正式测试 2026-11-04',power:'等级权重 p',createTest:'创建 Test',testHint:'Test 录入的是准确率（0～100），至少 3 张不同谱面才会标记为正式结果',records:'④ 训练 / Test 记录',noRecords:'暂无记录',trend:'④ 整组成绩趋势',selectAll:'全选场次',clear:'清空选择',resetView:'重置视图',trendHint:'每条线代表一场 Train 或 Test；每个点代表该场中的一次游玩。',history:'⑤ 单曲历史趋势',selectChart:'选择谱面'}
+};
+let language=localStorage.getItem('phitest-language')||'en';
+const t=key=>translations[language][key]||translations.en[key]||key;
+function applyLanguage(){
+ document.documentElement.lang=language==='zh'?'zh-CN':'en';
+ const text={appSubtitle:'subtitle',logoutButton:'logout',accountTitle:'account',sessionsLabel:'sessions',playsLabel:'plays',bestLabel:'best',averageLabel:'average',accessTitle:'access',backupTitle:'backup',addChartTitle:'addChart',trainingTitle:'training',testTitle:'test',recordsTitle:'records',trendTitle:'trend',historyTitle:'history'};
+ Object.entries(text).forEach(([id,key])=>$(id).textContent=t(key));
+ $('languageToggle').textContent=t('toggle');
+ $('importFile').previousElementSibling?.querySelector('button')?.replaceChildren(t('export'));
+ $('importFile').previousElementSibling?.querySelector('button.secondary')?.replaceChildren(t('import'));
+ $('dataMessage').textContent=t('importHint');
+ $('song').placeholder=t('song');$('artist').placeholder=t('artist');$('level').placeholder=t('level');$('constant').placeholder=t('constant');
+ $('sessionName').placeholder=t('sessionName');$('sessionNote').placeholder=t('notes');$('testName').placeholder=t('testName');$('testPower').placeholder=t('power');
+ $('chartForHistory').options[0].textContent=t('selectChart');$('chartSubmit').textContent=t('saveChart');$('chartCancel').textContent=t('cancel');
+ $('authUsername').placeholder=t('username');$('authPassword').placeholder=t('password');$('authCode').placeholder=t('code');$('authHint').textContent=t('accountHint');
+ document.querySelector('#authMode option[value="login"]').textContent=t('login');document.querySelector('#authMode option[value="register"]').textContent=t('register');document.querySelector('#authMode option[value="reset"]').textContent=t('reset');document.querySelector('#authMode option[value="setup"]').textContent=t('setup');
+ document.querySelectorAll('.chart-actions button')[0].textContent=t('selectAll');document.querySelectorAll('.chart-actions button')[1].textContent=t('clear');document.querySelectorAll('.chart-actions button[title]').forEach(button=>{button.textContent=t('resetView');button.title=t('resetView')});
+ $('trendHint').textContent=t('trendHint');
+ if($('sessionsList').textContent==='No records yet'||$('sessionsList').textContent==='暂无记录')$('sessionsList').textContent=t('noRecords');
+ updateAuthMode();
+}
+function toggleLanguage(){language=language==='en'?'zh':'en';localStorage.setItem('phitest-language',language);applyLanguage();if(currentUser){loadCharts();loadAll();}}
+function localizeMessage(message){
+ if(language==='en')return message;
+ const messages={'Please log in first':'请先登录','Your session has expired. Please log in again':'登录已过期，请重新登录','Incorrect username or password':'用户名或密码错误','Incorrect username, password, or authenticator code':'用户名、密码或验证器代码错误','Incorrect username or authenticator code':'用户名或验证器代码错误','Authenticator setup recovery has already been used':'该账户的验证器配置找回功能已经使用过','Username already exists':'用户名已存在','Chart not found':'谱面不存在','This chart already exists':'该谱面已经存在','Record not found':'记录不存在','Training chart not found':'训练曲目不存在','Test chart not found':'测试谱面不存在','Test not found':'测试不存在','Difficulty must be EZ, HD, IN, or AT':'难度必须为 EZ、HD、IN 或 AT','Judgement counts must satisfy N = P + G + B + M':'判定数量必须满足 N = P + G + B + M'};
+ return messages[message]||message;
+}
 const chartState=new Map();
 let trendSessions=[];
 const CHART_CUTOFF = new Date('2026-11-05T00:00:00');
@@ -104,15 +132,16 @@ function isChartPointVisible(timestamp){
  return !Number.isNaN(date.getTime()) && date>=CHART_CUTOFF;
 }
 let currentUser=null;
+let editingChartId=null;
 function updateAuthMode(){
  const mode=$('authMode').value;
- $('authSubmit').textContent=mode==='login'?'登录':mode==='register'?'创建账户并绑定验证器':mode==='setup'?'显示二维码和密钥':'重置密码';
- $('authPassword').placeholder=mode==='reset'?'新密码（至少 8 位）':'密码（至少 8 位）';
+ $('authSubmit').textContent=mode==='login'?t('login'):mode==='register'?(language==='zh'?'创建账户并绑定验证器':'Create account and set up authenticator'):mode==='setup'?(language==='zh'?'显示二维码和密钥':'Show QR code and secret'):(language==='zh'?'重置密码':'Reset password');
+ $('authPassword').placeholder=mode==='reset'?(language==='zh'?'新密码（至少 8 位）':'New password (at least 8 characters)'):t('password');
  $('authPassword').autocomplete=mode==='reset'?'new-password':'current-password';
- $('authHint').textContent=mode==='register'?'首次注册会创建 Authenticator 密钥':mode==='reset'?'需输入已绑定验证器当前代码':mode==='setup'?'输入该账户密码以重新显示配置':'请输入账户信息';
+ $('authHint').textContent=mode==='register'?(language==='zh'?'首次注册会创建 Authenticator 密钥':'Registration creates an authenticator secret'):mode==='reset'?(language==='zh'?'需输入已绑定验证器当前代码':'Enter the current code from your authenticator'):mode==='setup'?(language==='zh'?'输入该账户密码以重新显示配置':'Enter the account password to show the setup again'):t('accountHint');
  $('authCode').required=mode==='login'||mode==='reset';
  $('authCode').disabled=mode==='register'||mode==='setup';
- $('authCode').placeholder=mode==='register'?'注册后再添加 Authenticator':mode==='setup'?'无需验证码':'Authenticator 验证码（6 位）';
+ $('authCode').placeholder=mode==='register'?(language==='zh'?'注册后再添加 Authenticator':'Add an authenticator after registration'):mode==='setup'?(language==='zh'?'无需验证码':'No code required'):t('code');
  $('authMessage').textContent='';
 }
 async function submitAuth(){
@@ -130,23 +159,23 @@ async function submitAuth(){
 }
 function showTotpSetup(result,isNewAccount){
  const box=$('totpSetup');box.replaceChildren();
- const intro=document.createElement('p');intro.textContent=isNewAccount?'用 1Password 等 Authenticator 扫描二维码，或手动添加密钥。':'这是此账户现有的 Authenticator 配置。';
- const image=document.createElement('img');image.src=result.qr_code;image.alt='Authenticator 设置二维码';image.width=220;image.height=220;image.style.cssText='display:block;background:white;padding:8px;border-radius:6px';
- const secret=document.createElement('p');secret.textContent=`密钥：${result.totp_secret}`;
- const copy=document.createElement('button');copy.type='button';copy.textContent='复制密钥';copy.onclick=()=>navigator.clipboard.writeText(result.totp_secret).then(()=>{$('authMessage').textContent='密钥已复制'}).catch(()=>{$('authMessage').textContent='请手动复制上方密钥'});
- const link=document.createElement('a');link.href=result.otpauth_url;link.textContent='打开 Authenticator 配置链接';
+ const intro=document.createElement('p');intro.textContent=isNewAccount?'Scan the QR code with 1Password or another authenticator, or add the secret manually.':'This is the existing authenticator setup for this account.';
+ const image=document.createElement('img');image.src=result.qr_code;image.alt='Authenticator setup QR code';image.width=220;image.height=220;image.style.cssText='display:block;background:white;padding:8px;border-radius:6px';
+ const secret=document.createElement('p');secret.textContent=`Secret: ${result.totp_secret}`;
+ const copy=document.createElement('button');copy.type='button';copy.textContent='Copy secret';copy.onclick=()=>navigator.clipboard.writeText(result.totp_secret).then(()=>{$('authMessage').textContent='Secret copied'}).catch(()=>{$('authMessage').textContent='Copy the secret manually'});
+ const link=document.createElement('a');link.href=result.otpauth_url;link.textContent='Open authenticator setup link';
  box.append(intro,image,secret,copy,link);box.style.display='block';
- if(isNewAccount){$('authMode').value='login';updateAuthMode();$('authUsername').value=result.username;$('authPassword').value='';$('authMessage').textContent='验证器配置已显示；添加后即可登录。'}
+ if(isNewAccount){$('authMode').value='login';updateAuthMode();$('authUsername').value=result.username;$('authPassword').value='';$('authMessage').textContent='Authenticator setup shown. Add it, then log in.'}
 }
 async function showApp(username){
  currentUser=username;$('authPanel').style.display='none';$('appContent').style.display='block';
- $('accountBar').style.display='inline';$('accountName').textContent=`账户：${username}`;
+ $('accountBar').style.display='inline';$('accountName').textContent=`Account: ${username}`;
  await loadCharts();await loadAll();await loadAccessUrls();
 }
 async function logout(){await api('/api/auth/logout',{method:'POST'});location.reload()}
 async function api(path, options={}) {
   const r = await fetch(path, {credentials:'same-origin',headers:{'Content-Type':'application/json'}, ...options});
-  if (!r.ok) { let msg='请求失败'; try{const payload=await r.json();const detail=payload.detail;if(typeof detail==='string')msg=detail;else if(Array.isArray(detail))msg=detail.map(item=>item.msg||JSON.stringify(item)).join('；');else if(detail)msg=JSON.stringify(detail)}catch(e){}; throw new Error(msg); }
+  if (!r.ok) { let msg='Request failed'; try{const payload=await r.json();const detail=payload.detail;if(typeof detail==='string')msg=detail;else if(Array.isArray(detail))msg=detail.map(item=>item.msg||JSON.stringify(item)).join('; ');else if(detail)msg=JSON.stringify(detail)}catch(e){}; throw new Error(localizeMessage(msg)); }
   return r.json();
 }
 function fmt(n){return Number(n||0).toLocaleString('en-US')}
@@ -154,6 +183,27 @@ async function loadAccessUrls(){
  const urls=await api('/api/access-urls');
  const container=$('accessUrls');container.innerHTML='';
  urls.forEach(url=>{const link=document.createElement('a');link.href=url;link.textContent=url;link.target='_blank';link.rel='noopener';link.style.display='block';link.style.margin='6px 0';container.appendChild(link)});
+}
+async function exportData(){
+ const message=$('dataMessage');message.textContent='Generating export file...';
+ try{
+  const response=await fetch('/api/data/export',{credentials:'same-origin'});
+  if(!response.ok)throw new Error('Export failed');
+  const blob=await response.blob();
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='phitest-export.json';link.click();URL.revokeObjectURL(url);
+  message.textContent='Data exported.';
+ }catch(e){message.textContent=e.message}
+}
+async function importData(file){
+ const message=$('dataMessage');if(!file)return;
+ try{
+  const payload=JSON.parse(await file.text());
+  if(!payload||typeof payload!=='object')throw new Error('File content is not valid JSON');
+  const result=await api('/api/data/import',{method:'POST',body:JSON.stringify({data:payload})});
+  message.textContent=result.message;await loadCharts();await loadAll();
+ }catch(e){message.textContent=e.message}
+ $('importFile').value='';
 }
 function draw(canvasId, values, color='#70a5ff'){
  const c=$(canvasId),ctx=c.getContext('2d'),w=c.width,h=c.height;
@@ -200,7 +250,7 @@ function chartPointAt(canvas,event){
 function showChartTip(canvas,event){
  const hit=chartPointAt(canvas,event),wrap=canvas.parentElement,tip=wrap.querySelector('.chart-tip');
  if(!hit?.point){tip.style.display='none';return}
- const p=hit.point.p;tip.textContent=`${hit.point.seriesName?`${hit.point.seriesName} · `:''}${p.label||`第 ${hit.point.i+1} 次游玩`} · ${fmt(p.y)}${p.time?` · ${p.time}`:''}`;
+ const p=hit.point.p;tip.textContent=`${hit.point.seriesName?`${hit.point.seriesName} · `:''}${p.label||`Play ${hit.point.i+1}`} · ${fmt(p.y)}${p.time?` · ${p.time}`:''}`;
  tip.style.display='block';tip.style.left=`${Math.max(4,Math.min(event.offsetX+12,wrap.clientWidth-tip.offsetWidth-8))}px`;tip.style.top=`${Math.max(4,event.offsetY-tip.offsetHeight-10)}px`;
 }
 function enableChartInteraction(canvas){
@@ -213,21 +263,34 @@ function enableChartInteraction(canvas){
  canvas.addEventListener('wheel',event=>{event.preventDefault();const state=chartState.get(canvas.id);state.scale=Math.max(1,Math.min(8,state.scale*(event.deltaY<0?1.2:1/1.2)));draw(canvas.id,state.values,state.color)},{passive:false});
 }
 document.querySelectorAll('canvas').forEach(enableChartInteraction);
+applyLanguage();
 async function loadCharts(){
  const charts=await api('/api/charts');
  $('chartChoices').innerHTML='';
- $('chartForHistory').innerHTML='<option value="">选择谱面</option>';
+ $('chartForHistory').innerHTML=`<option value="">${t('selectChart')}</option>`;
  charts.forEach(c=>{
-  const label=`${c.song_name} · ${c.difficulty} ${c.level??''} · 定数 ${c.constant??'—'}`;
+  const label=`${c.song_name} · ${c.difficulty} ${c.level??''} · Constant ${c.constant??'-'}`;
   const div=document.createElement('label');div.className='listitem chartrow';
-  div.innerHTML=`<span><input type="checkbox" value="${c.id}" style="width:auto;margin-right:9px">${label}</span><input class="chart-count" type="number" min="1" max="10000" value="1" disabled aria-label="${label} 的数量">`;
+  div.innerHTML=`<span><input type="checkbox" value="${c.id}" style="width:auto;margin-right:9px">${label}</span><input class="chart-count" type="number" min="1" max="10000" value="1" disabled aria-label="${language==='zh'?'数量：':'Quantity of '}${label}"><button class="secondary" type="button">${language==='zh'?'编辑':'Edit'}</button>`;
   const checkbox=div.querySelector('input[type="checkbox"]');
   const countInput=div.querySelector('.chart-count');
+  div.querySelector('button').addEventListener('click',()=>editChart(c));
   checkbox.addEventListener('change',()=>{countInput.disabled=!checkbox.checked});
   $('chartChoices').appendChild(div);
   const op=document.createElement('option');op.value=c.id;op.textContent=label;$('chartForHistory').appendChild(op);
  });
- if(!charts.length)$('chartChoices').textContent='曲库为空，请先添加谱面。';
+ if(!charts.length)$('chartChoices').textContent='The chart library is empty. Add a chart first.';
+}
+function editChart(chart){
+ editingChartId=chart.id;
+ $('song').value=chart.song_name;$('diff').value=chart.difficulty;
+ $('level').value=chart.level??'';$('constant').value=chart.constant??'';
+ $('chartSubmit').textContent='Save changes';$('chartCancel').style.display='block';
+ $('song').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cancelChartEdit(){
+ editingChartId=null;$('song').value='';$('level').value='';$('constant').value='';
+ $('diff').value='IN';$('chartSubmit').textContent='Save chart';$('chartCancel').style.display='none';
 }
 function selectedChartIds(){
  const ids=[];
@@ -236,26 +299,26 @@ function selectedChartIds(){
   const count=row.querySelector('.chart-count');
   if(!checkbox.checked)return;
   const quantity=Number(count.value);
-  if(!Number.isInteger(quantity)||quantity<1||quantity>10000)throw new Error('每个谱面的数量必须是 1～10,000 的整数');
+  if(!Number.isInteger(quantity)||quantity<1||quantity>10000)throw new Error('Each chart quantity must be an integer from 1 to 10,000');
   for(let i=0;i<quantity;i++)ids.push(Number(checkbox.value));
  });
- if(ids.length<1||ids.length>10000)throw new Error('请选择 1～10,000 条谱面');
+ if(ids.length<1||ids.length>10000)throw new Error('Select between 1 and 10,000 charts');
  return ids;
 }
 async function addChart(){
- try{await api('/api/charts',{method:'POST',body:JSON.stringify({song:$('song').value,difficulty:$('diff').value,level:Number($('level').value),constant:Number($('constant').value)})});$('song').value='';$('level').value='';$('constant').value='';await loadCharts();alert('谱面已保存');}
+ try{const path=editingChartId?`/api/charts/${editingChartId}`:'/api/charts';const method=editingChartId?'PUT':'POST';await api(path,{method,body:JSON.stringify({song:$('song').value,difficulty:$('diff').value,level:Number($('level').value),constant:Number($('constant').value)})});const wasEditing=Boolean(editingChartId);cancelChartEdit();await loadCharts();alert(wasEditing?'Chart updated':'Chart saved');}
  catch(e){alert(e.message)}
 }
 async function createSession(){
  let ids;try{ids=selectedChartIds()}catch(e){alert(e.message);return}
- try{await api('/api/sessions',{method:'POST',body:JSON.stringify({name:$('sessionName').value||'训练 '+new Date().toLocaleString(),charts:ids})});$('sessionName').value='';$('sessionNote').value='';await loadAll();alert('训练已创建');}
+ try{await api('/api/sessions',{method:'POST',body:JSON.stringify({name:$('sessionName').value||'Training '+new Date().toLocaleString(),charts:ids})});$('sessionName').value='';$('sessionNote').value='';await loadAll();alert('Training session created');}
  catch(e){alert(e.message)}
 }
 async function createTest(){
  let ids;try{ids=selectedChartIds()}catch(e){alert(e.message);return}
  const power=Number($('testPower').value);
- if(!Number.isFinite(power)||power<=0){alert('等级权重 p 必须大于 0');return}
- try{await api('/api/tests',{method:'POST',body:JSON.stringify({name:$('testName').value||'Test '+new Date().toLocaleString(),charts:ids,power})});$('testName').value='';await loadAll();alert('Test 已创建');}
+ if(!Number.isFinite(power)||power<=0){alert('Level weight p must be greater than 0');return}
+ try{await api('/api/tests',{method:'POST',body:JSON.stringify({name:$('testName').value||'Test '+new Date().toLocaleString(),charts:ids,power})});$('testName').value='';await loadAll();alert('Test created');}
  catch(e){alert(e.message)}
 }
 async function openSession(id){
@@ -264,7 +327,7 @@ async function openSession(id){
   const isTest=data.session.kind==='test';
   const editor=document.createElement('div');
   editor.className='session-editor';
-  editor.innerHTML=`<p class="muted">${isTest?'填写 N、Perfect、Good、Bad、Miss 和整局 MaxCombo，系统按标准公式计算 ACC 与 Score。':'填写成绩（0～1,000,000）'}；每首单独保存，已保存的数据会自动显示。</p>`;
+  editor.innerHTML=`<p class="muted">${isTest?(language==='zh'?'填写 N、Perfect、Good、Bad、Miss 和整局 MaxCombo，系统按标准公式计算 ACC 与 Score。':'Enter N, Perfect, Good, Bad, Miss, and the overall MaxCombo. ACC and Score are calculated automatically.'):(language==='zh'?'填写成绩（0～1,000,000）':'Enter a score from 0 to 1,000,000')}${language==='zh'?'；每首单独保存，已保存的数据会自动显示。':'; save each chart separately. Saved values appear automatically.'}</p>`;
   data.charts.forEach(c=>{
    const row=document.createElement('div');
    row.className='listitem row';
@@ -272,13 +335,13 @@ async function openSession(id){
    label.textContent=`${c.sequence}. ${c.song_name} · ${c.difficulty}`;
    const field=document.createElement('input');
   field.type='number';field.min='0';field.max=isTest?'1000000':'1000000';
-  field.step='1';field.placeholder=isTest?'判定数据':'成绩';
+  field.step='1';field.placeholder=isTest?(language==='zh'?'判定数据':'Judgement data'):(language==='zh'?'成绩':'Score');
   field.value=isTest?'':(c.score??'');
   field.id=`record-${c.session_chart_id}`;
    const status=document.createElement('span');
-   status.className='muted';status.textContent=field.value===''?'未保存':'已保存';
+  status.className='muted';status.textContent=field.value===''?(language==='zh'?'未保存':'Not saved'):(language==='zh'?'已保存':'Saved');
   const save=document.createElement('button');
-   save.textContent='保存';save.type='button';
+  save.textContent=language==='zh'?'保存':'Save';save.type='button';
   save.addEventListener('click',()=>saveSessionRecord(id,c.session_chart_id,isTest,status));
   const details=document.createElement('div');
   if(isTest){
@@ -292,7 +355,7 @@ async function openSession(id){
   if(isTest){
    const result=await api(`/api/tests/${id}/result`);
    const summary=document.createElement('p');summary.className='muted';
-   summary.textContent=result.score==null?'Test 成绩：尚未录入':`Test 成绩：${result.score.toFixed(2)} · ${result.is_official?'正式结果':'样本不足（至少需要 3 张不同谱面）'}`;
+  summary.textContent=result.score==null?(language==='zh'?'Test 成绩：尚未录入':'Test score: No entries yet'):`${language==='zh'?'Test 成绩':'Test score'}: ${result.score.toFixed(2)} · ${result.is_official?(language==='zh'?'正式结果':'Official result'):(language==='zh'?'样本不足（至少需要 3 张不同谱面）':'Insufficient sample (at least 3 different charts required)')}`;
    editor.appendChild(summary);
   }
   const sessionItem=[...$('sessionsList').children].find(item=>item.dataset.sessionId===String(id));
@@ -307,27 +370,27 @@ async function saveSessionRecord(sessionId,recordId,isTest,status){
  if(isTest){
   const names=['total_notes','perfect','good','bad','miss','max_combo'];
   const values=Object.fromEntries(names.map(name=>[name,Number($(`record-${recordId}-${name}`).value)]));
-  if(names.some(name=>!Number.isInteger(values[name])||values[name]<0)){alert('所有判定数量必须是非负整数');return}
-  try{const result=await api(`/api/tests/${sessionId}/records/${recordId}`,{method:'PUT',body:JSON.stringify(values)});status.textContent=`已保存 · ACC ${result.accuracy.toFixed(4)}% · Score ${Math.round(result.score).toLocaleString()}`;await loadAll();}catch(e){alert(e.message)}
+  if(names.some(name=>!Number.isInteger(values[name])||values[name]<0)){alert('All judgement counts must be non-negative integers');return}
+  try{const result=await api(`/api/tests/${sessionId}/records/${recordId}`,{method:'PUT',body:JSON.stringify(values)});status.textContent=`Saved · ACC ${result.accuracy.toFixed(4)}% · Score ${Math.round(result.score).toLocaleString()}`;await loadAll();}catch(e){alert(e.message)}
   return;
  }
  const field=$(`record-${recordId}`),value=Number(field.value);
  if(!Number.isFinite(value)||value<0||value>(isTest?100:1000000)||(!isTest&&!Number.isInteger(value))){
-  alert(isTest?'准确率必须是 0～100 的数字':'成绩必须是 0～1,000,000 的整数');return;
+  alert(isTest?'Accuracy must be a number from 0 to 100':'Score must be an integer from 0 to 1,000,000');return;
  }
  try{
   await api(`/api/sessions/${sessionId}/records/${recordId}`,{method:'PUT',body:JSON.stringify({score:value})});
-  status.textContent='已保存';
+  status.textContent='Saved';
  }catch(e){alert(e.message)}
 }
 async function saveRecord(sessionId,scId){
  const value=Number($('score'+scId)?.value);
- if(!Number.isInteger(value)||value<0||value>1000000){alert('请输入 0～1,000,000 的整数分数');return}
- try{await api(`/api/sessions/${sessionId}/records/${scId}`,{method:'PUT',body:JSON.stringify({score:value})});alert('成绩已保存');}
+ if(!Number.isInteger(value)||value<0||value>1000000){alert('Enter an integer score from 0 to 1,000,000');return}
+ try{await api(`/api/sessions/${sessionId}/records/${scId}`,{method:'PUT',body:JSON.stringify({score:value})});alert('Score saved');}
  catch(e){alert(e.message)}
 }
 async function finishSession(id){
- try{await api(`/api/sessions/${id}/complete`,{method:'POST'});alert('训练已完成');window.location.reload();}
+ try{await api(`/api/sessions/${id}/complete`,{method:'POST'});alert('Training completed');window.location.reload();}
  catch(e){alert(e.message)}
 }
 async function loadChartHistory(){
@@ -347,15 +410,15 @@ async function loadAll(){
   const d=document.createElement('div');d.className='listitem';
   d.dataset.sessionId=String(r.id);
   const label=r.kind==='test'?'Test':'Train';
-  const detail=r.kind==='test'?`平均准确率 ${Number(r.average_accuracy||0).toFixed(2)}%`:`总分 ${fmt(r.total_score)}`;
-  d.innerHTML=`<b>#${r.id} [${label}] ${r.name}</b><p class="muted">${r.recorded_count}/${r.chart_count} 首已录入 · ${detail}</p><button onclick="openSession(${r.id})">打开并录入</button>`;
+  const detail=r.kind==='test'?(language==='zh'?`平均准确率 ${Number(r.average_accuracy||0).toFixed(2)}%`:`Average accuracy ${Number(r.average_accuracy||0).toFixed(2)}%`):(language==='zh'?`总分 ${fmt(r.total_score)}`:`Total score ${fmt(r.total_score)}`);
+  d.innerHTML=`<b>#${r.id} [${label}] ${r.name}</b><p class="muted">${r.recorded_count}/${r.chart_count} ${language==='zh'?'首已录入':'charts recorded'} · ${detail}</p><button onclick="openSession(${r.id})">${language==='zh'?'打开并录入':'Open and enter scores'}</button>`;
   $('sessionsList').appendChild(d);
  });
  const sessions=new Map();
  s.history.forEach(r=>{
   if(!sessions.has(r.session_id))sessions.set(r.session_id,{id:r.session_id,name:`#${r.session_id} [${r.kind==='test'?'Test':'Train'}] ${r.name}`,points:[]});
   const group=sessions.get(r.session_id);
-  group.points.push({x:Number(r.sequence),y:Number(r.score),label:`第 ${r.sequence} 首`,time:r.played_at});
+  group.points.push({x:Number(r.sequence),y:Number(r.score),label:`Chart ${r.sequence}`,time:r.played_at});
  });
  trendSessions=[...sessions.values()];
  const picker=$('trendSessions');picker.innerHTML='';
