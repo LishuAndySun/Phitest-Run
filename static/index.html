@@ -7,23 +7,25 @@
 <style>
 :root{font-family:"Avenir Next",Avenir,"Segoe UI",sans-serif;color:#172c28;background:#f3f2eb;--ink:#172c28;--muted:#697771;--line:#d9ded4;--paper:#fffefa;--green:#126b55;--coral:#df654b;--mint:#d9eee2;--display:Georgia,"Times New Roman",serif}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 92% 0%,#e1eee3 0,transparent 32%),#f3f2eb;min-height:100vh}header{padding:22px max(20px,calc((100vw - 1160px)/2));display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);background:#f8f7f1eF;position:sticky;top:0;z-index:5;backdrop-filter:blur(14px)}
-h1{font:700 24px var(--display);margin:0;letter-spacing:0}header p{margin:5px 0 0;color:var(--muted);font-size:12px}#accountBar{color:var(--ink);font-size:13px;white-space:nowrap}#accountBar button{margin-left:10px}
+h1{font:700 24px var(--display);margin:0;letter-spacing:0}header p{margin:5px 0 0;color:var(--muted);font-size:12px}#accountBar{color:var(--ink);font-size:13px;white-space:nowrap}#accountBar button{margin-left:10px}.top-actions{display:flex;align-items:center;gap:8px}.module-nav{grid-column:1/-1;display:flex;gap:6px;align-items:center;padding:4px;border-bottom:1px solid var(--line)}.module-nav a{color:var(--muted);font-size:12px;font-weight:700;text-decoration:none;padding:8px 12px;border-radius:3px}.module-nav a:hover,.module-nav a:focus{color:var(--green);background:var(--mint);outline:none}
+.module-nav a.active{color:#fff;background:var(--green)}
+.module[hidden]{display:none}.overview-tools{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 main{max-width:1200px;margin:auto;padding:26px 22px 64px;display:grid;gap:18px}
-#appContent{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px}.grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#appContent{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px}.module{grid-column:1/-1;display:grid;gap:12px}.module-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;padding:4px 2px}.module-heading h2{margin:0}.module-heading p{margin:0}.grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:20px;box-shadow:0 3px 14px #183c2b08}
 h2{font:700 18px var(--display);margin:0 0 15px;color:var(--ink)}.muted{color:var(--muted);font-size:13px;line-height:1.55}
 .metric{font:700 31px var(--display);margin-top:10px;color:var(--green)}.grid .card{border-top:3px solid var(--green);min-height:104px}.grid .card:nth-child(3){border-top-color:var(--coral)}
-#appContent>.card:nth-child(2),#appContent>.card:nth-child(3){grid-column:span 6}#appContent>.card:nth-child(4),#appContent>.card:nth-child(5){grid-column:span 6}#appContent>.card:nth-child(6){grid-column:span 6}#appContent>.card:nth-child(7){grid-column:span 6}#appContent>.card:nth-child(8){grid-column:1/-1}#appContent>.card:nth-child(9),#appContent>.card:nth-child(10){grid-column:span 6}
+#appContent>.card{grid-column:span 6}.module-wide{grid-column:1/-1!important}.module .card{height:100%}
 input,select,textarea,button{font:inherit;border-radius:3px;padding:10px 12px;border:1px solid #cbd4ca;background:#fff;color:var(--ink);width:100%;margin:5px 0;min-height:42px}input:focus,select:focus,textarea:focus{outline:2px solid #74aa91;outline-offset:1px}button{background:var(--green);color:white;border:0;font-weight:700;cursor:pointer;transition:background .16s,transform .16s}button:hover{background:#0c5846;transform:translateY(-1px)}button.secondary{background:#e8eee7;color:var(--ink);border:1px solid var(--line)}button.secondary:hover{background:#dce8dd}button:disabled{opacity:.5}
 .row{display:grid;grid-template-columns:2fr 1fr;gap:8px}.listitem{padding:12px 0;border-top:1px solid var(--line)}.session-editor{grid-column:1/-1}.session-editor .row{grid-template-columns:minmax(0,1fr)}.session-editor .row>div{display:grid;grid-template-columns:minmax(120px,1fr) minmax(100px,180px) auto auto;gap:8px;align-items:center}.session-editor label{overflow-wrap:anywhere}.session-editor input,.session-editor button{margin:0}
 .chartrow{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:10px;align-items:center}.chartrow input{margin:3px 0}canvas{width:100%;height:220px;background:#edf2eb;border:1px solid var(--line);border-radius:3px}.chart-wrap{position:relative;touch-action:none}.chart-tip{position:absolute;display:none;pointer-events:none;z-index:2;padding:8px 10px;background:var(--ink);border:1px solid #42536d;border-radius:3px;color:#fff;font-size:12px;white-space:nowrap;box-shadow:0 4px 14px #0003}.chart-actions{display:flex;justify-content:flex-end;gap:6px}.chart-actions button{width:auto;padding:6px 10px;font-size:12px;min-height:34px}.tag{font-size:12px;color:var(--green)}
 #authPanel{max-width:510px;margin:7vh auto;padding:22px}.session-editor .row>div{min-width:0}
-@media(max-width:760px){header{padding:16px 18px}header p{max-width:55vw}main{padding:18px 14px 40px}#appContent{grid-template-columns:1fr;gap:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#appContent>.card:nth-child(n){grid-column:1/-1}.card{padding:16px}.metric{font-size:27px}}
+@media(max-width:760px){header{padding:16px 18px}.top-actions{gap:4px}header p{max-width:55vw}main{padding:18px 14px 40px}#appContent{grid-template-columns:1fr;gap:22px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.overview-tools{grid-template-columns:1fr}.card{padding:16px}.metric{font-size:27px}.module-heading{align-items:start;flex-direction:column;gap:4px}.module-nav{overflow-x:auto;white-space:nowrap}}
 @media(max-width:480px){.row{grid-template-columns:1fr}#accountBar{font-size:0}#accountName{font-size:12px}.chartrow{grid-template-columns:minmax(0,1fr) 76px auto;gap:5px}.chartrow button{padding:7px 8px;font-size:12px}.session-editor .row>div{grid-template-columns:1fr 1fr}.session-editor label{grid-column:1/-1}.chart-actions{flex-wrap:wrap}}
 </style>
 </head>
 <body>
-<header><div><h1>PhiTest <span style="color:#126b55">/</span> Training</h1><p id="appSubtitle">Training plans · Manual score entry · Song and session analysis</p></div><span id="accountBar" style="display:none"><span id="accountName"></span><button id="logoutButton" class="secondary" style="width:auto;padding:4px 9px;min-height:32px" onclick="logout()">Log out</button></span><button id="languageToggle" class="secondary" style="width:auto;padding:4px 9px;min-height:32px" onclick="toggleLanguage()">中文</button></header>
+<header><div><h1>PhiTest <span style="color:#126b55">/</span> Training</h1><p id="appSubtitle">Training plans · Manual score entry · Song and session analysis</p></div><nav class="top-actions" aria-label="Page actions"><span id="accountBar" style="display:none"><span id="accountName"></span><button id="logoutButton" class="secondary" style="width:auto;padding:4px 9px;min-height:32px" onclick="logout()">Log out</button></span><button id="languageToggle" class="secondary" style="width:auto;padding:4px 9px;min-height:32px" onclick="toggleLanguage()">中文</button></nav></header>
 <main id="authPanel" style="display:none">
  <section class="card">
   <h2 id="accountTitle">Account</h2>
@@ -38,12 +40,16 @@ input,select,textarea,button{font:inherit;border-radius:3px;padding:10px 12px;bo
 </main>
 <main>
 <div id="appContent">
-<section class="grid">
+<nav class="module-nav" aria-label="Modules"><a id="overviewNav" href="#overview">Overview</a><a id="setupNav" href="#setup">Setup</a><a id="recordsNav" href="#records">Records</a><a id="analysisNav" href="#analysis">Analysis</a></nav>
+<section class="module" id="overview">
+<div class="module-heading"><h2 id="overviewTitle">Overview</h2><p class="muted" id="overviewHint">Your current practice activity</p></div>
+<div class="grid">
  <div class="card"><div class="muted" id="sessionsLabel">Sessions</div><div class="metric" id="sessions">—</div></div>
  <div class="card"><div class="muted" id="playsLabel">Score records</div><div class="metric" id="plays">—</div></div>
  <div class="card"><div class="muted" id="bestLabel">Best song score</div><div class="metric" id="best">—</div></div>
  <div class="card"><div class="muted" id="averageLabel">Average song score</div><div class="metric" id="average">—</div></div>
-</section>
+</div>
+<div class="overview-tools">
 <section class="card">
 <h2 id="accessTitle">Access URLs</h2><div id="accessUrls" class="muted">Loading addresses...</div>
 </section>
@@ -53,6 +59,10 @@ input,select,textarea,button{font:inherit;border-radius:3px;padding:10px 12px;bo
 <input id="importFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this.files[0])">
 <div id="dataMessage" class="muted" role="status">Importing appends sessions and does not delete existing data.</div>
 </section>
+</div>
+</section>
+<section class="module" id="setup">
+<div class="module-heading"><h2 id="setupTitle">Build a practice set</h2><p class="muted" id="setupHint">Add charts, then turn them into a Train or Test session</p></div>
 <section class="card">
 <h2 id="addChartTitle">1. Add chart</h2>
 <div class="row"><input id="song" placeholder="Song title, e.g. Glaciaxion"><input id="artist" placeholder="Composer (optional)"></div>
@@ -73,9 +83,15 @@ input,select,textarea,button{font:inherit;border-radius:3px;padding:10px 12px;bo
 <div class="row"><input id="testPower" type="number" step="0.1" min="0.1" value="1" placeholder="Level weight p"><button onclick="createTest()">Create Test</button></div>
 <div class="muted">Test uses accuracy (0-100). At least 3 different charts are required for an official result.</div>
 </section>
-<section class="card">
+</section>
+<section class="module" id="records">
+<div class="module-heading"><h2 id="recordsModuleTitle">Practice records</h2><p class="muted" id="recordsHint">Open a session to enter or update scores</p></div>
+<section class="card module-wide">
 <h2 id="recordsTitle">4. Training / Test records</h2><div id="sessionsList" class="muted">No records yet</div>
 </section>
+</section>
+<section class="module" id="analysis">
+<div class="module-heading"><h2 id="analysisTitle">Analysis</h2><p class="muted" id="analysisHint">Follow progress by session or by chart</p></div>
 <section class="card">
 <h2 id="trendTitle">4. Session score trend</h2><div class="chart-wrap"><canvas id="trend" width="1000" height="260"></canvas><div class="chart-tip"></div></div>
 <div class="chart-actions"><button class="secondary" onclick="selectTrendSessions(true)">Select all sessions</button><button class="secondary" onclick="selectTrendSessions(false)">Clear selection</button></div>
@@ -90,19 +106,20 @@ input,select,textarea,button{font:inherit;border-radius:3px;padding:10px 12px;bo
 <div class="chart-wrap"><canvas id="songTrend" width="1000" height="260"></canvas><div class="chart-tip"></div></div>
 <div class="chart-actions"><button class="secondary" onclick="resetChart('songTrend')" title="Reset zoom and pan">Reset view</button></div>
 </section>
+</section>
 </div>
 </main>
 <script>
 const $ = id => document.getElementById(id);
 const translations={
- en:{toggle:'中文',subtitle:'Training plans · Manual score entry · Song and session analysis',logout:'Log out',account:'Account',login:'Log in',register:'Register',reset:'Forgot password',setup:'Recover authenticator setup',accountHint:'Enter your account information',username:'Username',password:'Password (at least 8 characters)',code:'Authenticator code (6 digits)',sessions:'Sessions',plays:'Score records',best:'Best song score',average:'Average song score',access:'Access URLs',backup:'Data backup',export:'Export account data',import:'Import data file',importHint:'Importing appends sessions and does not delete existing data',addChart:'1. Add chart',song:'Song title, e.g. Glaciaxion',artist:'Composer (optional)',level:'Game level, e.g. 12',constant:'Chart constant, e.g. 12.0',saveChart:'Save chart',cancel:'Cancel edit',training:'2. Create training session (1-10,000 charts)',sessionName:'Session name, e.g. Orange 37 gold push',chartLibrary:'Loading chart library...',notes:'Training notes (optional)',createTraining:'Create training',test:'3. Create Test (PhiTest formula)',testName:'Test name, e.g. Official test 2026-11-04',power:'Level weight p',createTest:'Create Test',testHint:'Test uses accuracy (0-100). At least 3 different charts are required for an official result',records:'4. Training / Test records',noRecords:'No records yet',trend:'4. Session score trend',selectAll:'Select all sessions',clear:'Clear selection',resetView:'Reset view',trendHint:'Each line represents a Train or Test session; each point represents one play in that session',history:'5. Song history trend',selectChart:'Select a chart'},
- zh:{toggle:'English',subtitle:'训练计划 · 手动成绩录入 · 单曲与整组分析',logout:'退出',account:'账户',login:'登录',register:'注册',reset:'忘记密码',setup:'找回验证器配置',accountHint:'请输入账户信息',username:'用户名',password:'密码（至少 8 位）',code:'Authenticator 验证码（6 位）',sessions:'训练场次',plays:'成绩记录',best:'个人最高单曲分',average:'平均单曲分',access:'访问地址',backup:'数据备份',export:'导出当前账户数据',import:'导入数据文件',importHint:'导入会追加场次，不会删除现有数据',addChart:'① 添加谱面',song:'曲名，例如 Glaciaxion',artist:'作曲者（可空）',level:'游戏等级，例如 12',constant:'定数，例如 12.0',saveChart:'保存谱面',cancel:'取消编辑',training:'② 创建连续训练（1～10,000 条）',sessionName:'训练名称，例如 橙色37冲金训练',chartLibrary:'正在加载曲库…',notes:'训练备注（可选）',createTraining:'创建训练',test:'③ 创建 Test（按 PhiTest 公式）',testName:'测试名称，例如正式测试 2026-11-04',power:'等级权重 p',createTest:'创建 Test',testHint:'Test 录入的是准确率（0～100），至少 3 张不同谱面才会标记为正式结果',records:'④ 训练 / Test 记录',noRecords:'暂无记录',trend:'④ 整组成绩趋势',selectAll:'全选场次',clear:'清空选择',resetView:'重置视图',trendHint:'每条线代表一场 Train 或 Test；每个点代表该场中的一次游玩。',history:'⑤ 单曲历史趋势',selectChart:'选择谱面'}
+ en:{toggle:'中文',subtitle:'Training plans · Manual score entry · Song and session analysis',logout:'Log out',account:'Account',login:'Log in',register:'Register',reset:'Forgot password',setup:'Recover authenticator setup',accountHint:'Enter your account information',username:'Username',password:'Password (at least 8 characters)',code:'Authenticator code (6 digits)',sessions:'Sessions',plays:'Score records',best:'Best song score',average:'Average song score',access:'Access URLs',backup:'Data backup',export:'Export account data',import:'Import data file',importHint:'Importing appends sessions and does not delete existing data',overview:'Overview',overviewHint:'Your current practice activity',setupTitle:'Build a practice set',setupHint:'Add charts, then turn them into a Train or Test session',recordsModule:'Practice records',recordsHint:'Open a session to enter or update scores',analysis:'Analysis',analysisHint:'Follow progress by session or by chart',navSetup:'Setup',navRecords:'Records',navAnalysis:'Analysis',addChart:'1. Add chart',song:'Song title, e.g. Glaciaxion',artist:'Composer (optional)',level:'Game level, e.g. 12',constant:'Chart constant, e.g. 12.0',saveChart:'Save chart',cancel:'Cancel edit',training:'2. Create training session (1-10,000 charts)',sessionName:'Session name, e.g. Orange 37 gold push',chartLibrary:'Loading chart library...',notes:'Training notes (optional)',createTraining:'Create training',test:'3. Create Test (PhiTest formula)',testName:'Test name, e.g. Official test 2026-11-04',power:'Level weight p',createTest:'Create Test',testHint:'Test uses accuracy (0-100). At least 3 different charts are required for an official result',records:'4. Training / Test records',noRecords:'No records yet',trend:'4. Session score trend',selectAll:'Select all sessions',clear:'Clear selection',resetView:'Reset view',trendHint:'Each line represents a Train or Test session; each point represents one play in that session',history:'5. Song history trend',selectChart:'Select a chart'},
+ zh:{toggle:'English',subtitle:'训练计划 · 手动成绩录入 · 单曲与整组分析',logout:'退出',account:'账户',login:'登录',register:'注册',reset:'忘记密码',setup:'找回验证器配置',accountHint:'请输入账户信息',username:'用户名',password:'密码（至少 8 位）',code:'Authenticator 验证码（6 位）',sessions:'训练场次',plays:'成绩记录',best:'个人最高单曲分',average:'平均单曲分',access:'访问地址',backup:'数据备份',export:'导出当前账户数据',import:'导入数据文件',importHint:'导入会追加场次，不会删除现有数据',overview:'概览',overviewHint:'查看当前训练活动',setupTitle:'建立训练内容',setupHint:'添加谱面，然后创建 Train 或 Test 场次',recordsModule:'训练记录',recordsHint:'打开场次来录入或更新成绩',analysis:'数据分析',analysisHint:'按场次或谱面追踪进度',navSetup:'配置',navRecords:'记录',navAnalysis:'分析',addChart:'① 添加谱面',song:'曲名，例如 Glaciaxion',artist:'作曲者（可空）',level:'游戏等级，例如 12',constant:'定数，例如 12.0',saveChart:'保存谱面',cancel:'取消编辑',training:'② 创建连续训练（1～10,000 条）',sessionName:'训练名称，例如 橙色37冲金训练',chartLibrary:'正在加载曲库…',notes:'训练备注（可选）',createTraining:'创建训练',test:'③ 创建 Test（按 PhiTest 公式）',testName:'测试名称，例如正式测试 2026-11-04',power:'等级权重 p',createTest:'创建 Test',testHint:'Test 录入的是准确率（0～100），至少 3 张不同谱面才会标记为正式结果',records:'④ 训练 / Test 记录',noRecords:'暂无记录',trend:'④ 整组成绩趋势',selectAll:'全选场次',clear:'清空选择',resetView:'重置视图',trendHint:'每条线代表一场 Train 或 Test；每个点代表该场中的一次游玩。',history:'⑤ 单曲历史趋势',selectChart:'选择谱面'}
 };
 let language=localStorage.getItem('phitest-language')||'en';
 const t=key=>translations[language][key]||translations.en[key]||key;
 function applyLanguage(){
  document.documentElement.lang=language==='zh'?'zh-CN':'en';
- const text={appSubtitle:'subtitle',logoutButton:'logout',accountTitle:'account',sessionsLabel:'sessions',playsLabel:'plays',bestLabel:'best',averageLabel:'average',accessTitle:'access',backupTitle:'backup',addChartTitle:'addChart',trainingTitle:'training',testTitle:'test',recordsTitle:'records',trendTitle:'trend',historyTitle:'history'};
+ const text={appSubtitle:'subtitle',logoutButton:'logout',accountTitle:'account',sessionsLabel:'sessions',playsLabel:'plays',bestLabel:'best',averageLabel:'average',accessTitle:'access',backupTitle:'backup',overviewNav:'overview',overviewTitle:'overview',overviewHint:'overviewHint',setupNav:'navSetup',setupTitle:'setupTitle',setupHint:'setupHint',recordsNav:'navRecords',recordsModuleTitle:'recordsModule',recordsHint:'recordsHint',analysisNav:'navAnalysis',analysisTitle:'analysis',analysisHint:'analysisHint',addChartTitle:'addChart',trainingTitle:'training',testTitle:'test',recordsTitle:'records',trendTitle:'trend',historyTitle:'history'};
  Object.entries(text).forEach(([id,key])=>$(id).textContent=t(key));
  $('languageToggle').textContent=t('toggle');
  $('importFile').previousElementSibling?.querySelector('button')?.replaceChildren(t('export'));
@@ -118,6 +135,13 @@ function applyLanguage(){
  if($('sessionsList').textContent==='No records yet'||$('sessionsList').textContent==='暂无记录')$('sessionsList').textContent=t('noRecords');
  updateAuthMode();
 }
+const moduleIds=['overview','setup','records','analysis'];
+function showModule(id){
+ if(!moduleIds.includes(id))id='overview';
+ moduleIds.forEach(m=>{$(m).hidden=m!==id;document.querySelector(`.module-nav a[href="#${m}"]`)?.classList.toggle('active',m===id)});
+ if(id==='analysis'){renderTrend();loadChartHistory();}
+}
+window.addEventListener('hashchange',()=>showModule(location.hash.slice(1)));
 function toggleLanguage(){language=language==='en'?'zh':'en';localStorage.setItem('phitest-language',language);applyLanguage();if(currentUser){loadCharts();loadAll();}}
 function localizeMessage(message){
  if(language==='en')return message;
@@ -169,6 +193,7 @@ function showTotpSetup(result,isNewAccount){
 }
 async function showApp(username){
  currentUser=username;$('authPanel').style.display='none';$('appContent').style.display='block';
+ showModule(location.hash.slice(1)||'overview');
  $('accountBar').style.display='inline';$('accountName').textContent=`Account: ${username}`;
  await loadCharts();await loadAll();await loadAccessUrls();
 }
