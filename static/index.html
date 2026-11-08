@@ -70,6 +70,9 @@ input,select,textarea,button{font:inherit;border-radius:3px;padding:10px 12px;bo
 <div class="row"><select id="diff"><option>EZ</option><option>HD</option><option selected>IN</option><option>AT</option></select><input id="level" type="number" placeholder="Game level, e.g. 12"></div>
 <input id="constant" type="number" step="0.1" placeholder="Chart constant, e.g. 12.0">
 <div class="row"><button id="chartSubmit" onclick="addChart()">Save chart</button><button id="chartCancel" class="secondary" style="display:none" onclick="cancelChartEdit()">Cancel edit</button></div>
+<div class="row"><button id="chartImportButton" class="secondary" onclick="$('chartImportFile').click()">Import charts (CSV / JSON)</button><a id="chartImportTemplate" class="muted" download="phitest-charts-template.csv" href="data:text/csv;charset=utf-8,song%2Cdifficulty%2Clevel%2Cconstant%0AGlaciaxion%2CIN%2C15%2C15.0">CSV template</a></div>
+<input id="chartImportFile" type="file" accept=".csv,.json,text/csv,application/json" style="display:none" onchange="importCharts(this.files[0])">
+<div id="chartImportMessage" class="muted" role="status"></div>
 </section>
 <section class="card">
 <h2 id="trainingTitle">2. Create training session (1-10,000 charts)</h2>
@@ -129,6 +132,7 @@ function applyLanguage(){
  $('song').placeholder=t('song');$('artist').placeholder=t('artist');$('level').placeholder=t('level');$('constant').placeholder=t('constant');
  $('sessionName').placeholder=t('sessionName');$('sessionNote').placeholder=t('notes');$('testName').placeholder=t('testName');$('testPower').placeholder=t('power');
  $('chartForHistory').options[0].textContent=t('selectChart');$('chartSubmit').textContent=t('saveChart');$('chartCancel').textContent=t('cancel');
+ $('chartImportButton').textContent=language==='zh'?'导入谱面（CSV / JSON）':'Import charts (CSV / JSON)';$('chartImportTemplate').textContent=language==='zh'?'CSV 模板':'CSV template';
  $('authUsername').placeholder=t('username');$('authPassword').placeholder=t('password');$('authCode').placeholder=t('code');$('authHint').textContent=t('accountHint');
  document.querySelector('#authMode option[value="login"]').textContent=t('login');document.querySelector('#authMode option[value="register"]').textContent=t('register');document.querySelector('#authMode option[value="reset"]').textContent=t('reset');document.querySelector('#authMode option[value="setup"]').textContent=t('setup');
  document.querySelectorAll('.chart-actions button')[0].textContent=t('selectAll');document.querySelectorAll('.chart-actions button')[1].textContent=t('clear');document.querySelectorAll('.chart-actions button[title]').forEach(button=>{button.textContent=t('resetView');button.title=t('resetView')});
@@ -230,6 +234,37 @@ async function importData(file){
   message.textContent=result.message;await loadCharts();await loadAll();
  }catch(e){message.textContent=e.message}
  $('importFile').value='';
+}
+function parseChartCsv(text){
+ const rows=[];let row=[],field='',quoted=false;
+ for(let index=0;index<text.length;index++){
+  const char=text[index];
+  if(quoted){if(char==='"'&&text[index+1]==='"'){field+='"';index++;}else if(char==='"')quoted=false;else field+=char;}
+  else if(char==='"')quoted=true;
+  else if(char===','){row.push(field);field='';}
+  else if(char==='\n'){row.push(field);rows.push(row);row=[];field='';}
+  else if(char!=='\r')field+=char;
+ }
+ if(quoted)throw new Error('CSV contains an unfinished quoted field');
+ if(field||row.length){row.push(field);rows.push(row);}
+ if(!rows.length)throw new Error('CSV file is empty');
+ const headers=rows.shift().map(value=>value.trim().toLowerCase());
+ const required=['song','difficulty','level','constant'];
+ if(required.some(key=>!headers.includes(key)))throw new Error('CSV must include song,difficulty,level,constant columns');
+ return rows.filter(values=>values.some(value=>value.trim())).map(values=>Object.fromEntries(headers.map((key,index)=>[key,values[index]??''])));
+}
+async function importCharts(file){
+ const message=$('chartImportMessage');if(!file)return;
+ try{
+  const text=await file.text();
+  let charts=file.name.toLowerCase().endsWith('.csv')?parseChartCsv(text):JSON.parse(text);
+  if(charts&& !Array.isArray(charts)&&Array.isArray(charts.charts))charts=charts.charts;
+  if(!Array.isArray(charts))throw new Error('JSON must be an array of chart objects');
+  const payload=charts.map(chart=>({song:chart.song??chart.song_name,difficulty:chart.difficulty,level:Number(chart.level),constant:Number(chart.constant)}));
+  const result=await api('/api/charts/import',{method:'POST',body:JSON.stringify({charts:payload})});
+  message.textContent=result.message;await loadCharts();
+ }catch(error){message.textContent=error.message}
+ $('chartImportFile').value='';
 }
 function draw(canvasId, values, color='#70a5ff'){
  const c=$(canvasId),ctx=c.getContext('2d'),w=c.width,h=c.height;

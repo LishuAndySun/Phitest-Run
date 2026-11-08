@@ -326,6 +326,10 @@ class ChartInput(BaseModel):
         return value
 
 
+class ChartImportInput(BaseModel):
+    charts: list[ChartInput] = Field(min_length=1, max_length=10000)
+
+
 class SessionInput(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     charts: list[int] = Field(min_length=1, max_length=10000)
@@ -409,6 +413,28 @@ def add_chart(data: ChartInput, user=Depends(authenticate)):
     except sqlite3.IntegrityError:
         raise HTTPException(409, "This chart already exists")
     return {"message": "添加成功"}
+
+
+@app.post("/api/charts/import")
+def import_charts(payload: ChartImportInput, user=Depends(authenticate)):
+    added = skipped = 0
+    with database() as db:
+        for chart in payload.charts:
+            difficulty = chart.difficulty.upper()
+            if difficulty not in {"EZ", "HD", "IN", "AT"}:
+                raise HTTPException(400, "Difficulty must be EZ, HD, IN, or AT")
+            db.execute("INSERT OR IGNORE INTO songs(name) VALUES(?)", (chart.song,))
+            song = db.execute("SELECT id FROM songs WHERE name=?", (chart.song,)).fetchone()
+            cursor = db.execute(
+                "INSERT OR IGNORE INTO charts(song_id,difficulty,level,constant) VALUES(?,?,?,?)",
+                (song["id"], difficulty, chart.level, chart.constant),
+            )
+            if cursor.rowcount:
+                added += 1
+            else:
+                skipped += 1
+    return {"added": added, "skipped": skipped,
+            "message": f"已导入 {added} 张谱面，跳过 {skipped} 张重复谱面"}
 
 
 @app.put("/api/charts/{chart_id}")
